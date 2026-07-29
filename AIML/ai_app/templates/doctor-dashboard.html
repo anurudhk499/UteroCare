@@ -1,0 +1,1245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UteroCare — Doctor Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --white: #ffffff;
+      --border: #e4e9f2;
+      --border-dark: #d0d8e8;
+      --text: #0f1c35;
+      --text-2: #4a5878;
+      --text-3: #8a96b0;
+      --blue: #1a56db;
+      --blue-light: #e8f0fe;
+      --blue-mid: #3b82f6;
+      --blue-soft: #dbeafe;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --teal: #0d9488;
+      --teal-light: #ccfbf1;
+      --sidebar-w: 224px;
+      --nav-h: 60px;
+      --shadow-sm: 0 1px 3px rgba(15,28,53,0.07), 0 1px 2px rgba(15,28,53,0.04);
+      --shadow-md: 0 4px 16px rgba(15,28,53,0.08), 0 1px 4px rgba(15,28,53,0.05);
+      --shadow-lg: 0 8px 32px rgba(15,28,53,0.1), 0 2px 8px rgba(15,28,53,0.06);
+      --radius: 14px;
+      --radius-sm: 9px;
+      --radius-lg: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── TOPNAV ── */
+    .topnav {
+      position: fixed; top: 0; left: var(--sidebar-w); right: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(255,255,255,0.52);
+      backdrop-filter: blur(28px) saturate(170%);
+      -webkit-backdrop-filter: blur(28px) saturate(170%);
+      border-bottom: 1px solid rgba(255,255,255,0.75);
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.90) inset, 0 4px 12px rgba(29,78,216,0.07), 0 8px 28px rgba(29,78,216,0.09);
+      display: flex; align-items: center; gap: 16px; padding: 0 28px;
+    }
+
+    .search-box {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.78);
+      border: 1.5px solid rgba(200,218,248,0.85);
+      border-radius: 20px; padding: 0 14px; height: 38px; min-width: 280px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 2px 8px rgba(29,78,216,0.05);
+      transition: all 0.22s;
+    }
+    .search-box:focus-within { border-color: #3b82f6; background: #fff; box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 0 0 4px rgba(59,130,246,0.11); }
+    .search-box input { border: none; outline: none; background: transparent; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12.5px; color: #1a2a4a; width: 100%; }
+    .search-box input::placeholder { color: #b0bdd8; }
+
+    .nav-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.72); border: 1.5px solid rgba(200,218,248,0.80);
+      cursor: pointer; position: relative; color: #4a5a7a; transition: all 0.18s;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.92) inset, 0 4px 10px rgba(29,78,216,0.07);
+    }
+    .nav-icon:hover { background: #fff; border-color: rgba(59,130,246,0.45); color: #2563eb; transform: translateY(-2px); }
+    .nav-icon .dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: #dc2626; border: 1px solid #fff; }
+
+    .nav-profile {
+      display: flex; align-items: center; gap: 10px;
+      padding: 5px 13px 5px 6px;
+      background: rgba(255,255,255,0.72); border: 1.5px solid rgba(200,218,248,0.80);
+      border-radius: 12px; cursor: pointer; transition: all 0.20s;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.92) inset, 0 4px 14px rgba(29,78,216,0.07);
+    }
+    .nav-profile:hover { background: #fff; border-color: rgba(59,130,246,0.40); transform: translateY(-2px); }
+    .nav-avatar { width: 30px; height: 30px; border-radius: 9px; overflow: hidden; flex-shrink: 0; border: 1.5px solid rgba(200,218,248,0.70); }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-profile-text strong { display: block; font-size: 12.5px; font-weight: 600; color: #1a2a4a; }
+    .nav-profile-text span { font-size: 10.5px; color: #9daec8; }
+
+    /* Doctor badge in nav */
+    .doc-verified-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: linear-gradient(135deg, #e8f0fe, #dbeafe);
+      border: 1px solid #c7d7fc; color: var(--blue);
+      font-size: 0.67rem; font-weight: 700; letter-spacing: 0.5px;
+      padding: 3px 9px; border-radius: 20px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w); z-index: 200;
+      background: var(--white); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
+    }
+    .sidebar-brand { display: flex; align-items: center; gap: 5px; padding: 6px 6px 6px; margin-bottom: -10px; }
+    .sidebar-brand img { width: 54px; height: 54px; object-fit: contain; }
+    .sidebar-brand-text { display: flex; flex-direction: column; }
+    .utero { background: linear-gradient(135deg, #1a2e5b, #879fde); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .care { background: linear-gradient(135deg, #3b82f6, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-brand-text p { margin-top: 3px; text-align: center; font-size: .60rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; }
+
+    /* Doctor portal indicator */
+    .doctor-portal-tag {
+      margin: 10px 12px 0;
+      padding: 6px 10px; border-radius: 8px;
+      background: linear-gradient(135deg, #ede9fe, #dbeafe);
+      border: 1px solid #c4b5fd;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .doctor-portal-tag span { font-size: 0.68rem; font-weight: 700; color: var(--purple); letter-spacing: 0.3px; }
+
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .nav-section-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); padding: 12px 10px 5px; margin-top: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 9px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: all .15s;
+      font-size: 0.84rem; font-weight: 500; color: var(--text-2);
+    }
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
+    .nav-item svg { flex-shrink: 0; opacity: 0.8; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-badge { margin-left: auto; background: var(--blue); color: white; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .nav-badge.red { background: var(--red); }
+    .nav-badge.amber { background: var(--amber); }
+    .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
+    .nav-logout { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.84rem; font-weight: 500; color: var(--red); transition: background .15s; }
+    .nav-logout:hover { background: var(--red-light); }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); padding-top: var(--nav-h); min-height: 100vh; }
+    .page { width: 100%; padding: 28px; margin: 0 auto; }
+
+    /* ── CARD ── */
+    .card {
+      position: relative; overflow: hidden;
+      background: rgba(255,255,255,0.52);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.82);
+      border-radius: 24px;
+      box-shadow: 0 2px 0 rgba(255,255,255,0.95) inset, 0 8px 22px rgba(29,78,216,0.07), 0 20px 48px rgba(15,23,42,0.06);
+      transition: transform .28s ease, box-shadow .28s ease;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 2px 0 rgba(255,255,255,0.95) inset, 0 14px 34px rgba(29,78,216,0.12), 0 30px 70px rgba(15,23,42,0.08); }
+
+    /* ── HERO ── */
+    .hero {
+      border-radius: 14px; overflow: hidden; position: relative;
+      display: flex; align-items: center; min-height: 300px;
+      background: linear-gradient(108deg, #14213d 0%, #1a3a8e 45%, #2563eb 100%);
+      box-shadow: var(--shadow-lg);
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 55% 80% at 85% 50%, rgba(124,58,237,0.25) 0%, transparent 70%), linear-gradient(90deg, rgba(15,28,70,0.8) 30%, transparent 70%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; opacity: 0.06;
+      background-image: linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .hero-content { position: relative; z-index: 3; padding: 44px 54px; max-width: 650px; margin-left: 30px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+    }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; animation: hbpulse 1.6s ease-in-out infinite; }
+    @keyframes hbpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .hero h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1.1; color: #ffffff; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .hero p { font-size: 0.875rem; line-height: 1.65; color: rgba(255,255,255,0.7); margin-bottom: 24px; max-width: 440px; }
+
+    /* Hero quick stats bar */
+    .hero-stats-bar {
+      display: flex; gap: 24px; margin-top: 4px;
+    }
+    .hero-stat-item { display: flex; flex-direction: column; gap: 2px; }
+    .hero-stat-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; }
+    .hero-stat-lbl { font-size: 0.68rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+    .hero-stat-sep { width: 1px; background: rgba(255,255,255,0.18); align-self: stretch; }
+
+    /* Hero right panels */
+    .hero-panels {
+      position: absolute; right: 40px; top: 50%; transform: translateY(-50%); z-index: 3;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .hero-panel {
+      background: rgba(255,255,255,0.12); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.18); border-radius: 14px;
+      padding: 12px 16px; min-width: 180px;
+    }
+    .hp-label { font-size: 0.65rem; color: rgba(255,255,255,0.55); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+    .hp-val { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .hp-sub { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 1px; }
+    .hp-dot-row { display: flex; gap: 5px; margin-top: 7px; }
+    .hp-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+    .hp-dot.critical { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.6); }
+    .hp-dot.high { background: #fbbf24; }
+    .hp-dot.normal { background: #34d399; }
+
+    /* ── STATS ROW ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; }
+    .stat-card {
+      position: relative; padding: 22px 20px 18px; border-radius: 20px; overflow: hidden; cursor: default;
+      background: rgba(255,255,255,0.52); backdrop-filter: blur(28px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.82);
+      box-shadow: 0 2px 0 0 rgba(255,255,255,0.95) inset, 0 6px 18px rgba(29,78,216,0.08), 0 14px 40px rgba(29,78,216,0.07);
+      transition: transform 0.26s cubic-bezier(.22,.68,0,1.2), box-shadow 0.26s ease;
+    }
+    .stat-card:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 2px 0 0 rgba(255,255,255,0.95) inset, 0 10px 28px rgba(29,78,216,0.13); }
+    .sc-glow { position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(191,219,254,0.55) 0%, transparent 70%); pointer-events: none; }
+    .sc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+    .sc-icon { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; color: #2563eb; background: rgba(255,255,255,0.70); border: 1px solid rgba(200,218,248,0.80); box-shadow: 0 1px 0 rgba(255,255,255,0.90) inset, 0 5px 14px rgba(29,78,216,0.12); }
+    .sc-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 20px; }
+    .sc-badge.up { background: rgba(5,150,105,0.10); border: 1px solid rgba(5,150,105,0.18); color: #059669; }
+    .sc-badge.neutral { background: rgba(29,78,216,0.08); border: 1px solid rgba(29,78,216,0.15); color: #2563eb; }
+    .sc-badge.warn { background: rgba(217,119,6,0.10); border: 1px solid rgba(217,119,6,0.18); color: var(--amber); }
+    .sc-badge.red { background: rgba(220,38,38,0.10); border: 1px solid rgba(220,38,38,0.18); color: var(--red); }
+    .sc-value { font-size: 30px; font-weight: 700; color: #0f172a; line-height: 1; margin-bottom: 5px; letter-spacing: -1px; }
+    .sc-value span { font-size: 14px; font-weight: 500; color: #94a3b8; letter-spacing: 0; }
+    .sc-label { font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 14px; }
+    .sc-bar { height: 4px; background: rgba(200,218,248,0.55); border-radius: 20px; overflow: hidden; }
+    .sc-bar-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #2563eb, #3b82f6); transition: width 0.8s; }
+    .sc-bar-fill.warn { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+    .sc-bar-fill.red { background: linear-gradient(90deg, var(--red), #f87171); }
+
+    /* ── LAYOUT ── */
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 320px; gap: 18px; margin-top: 18px; }
+    .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 18px; margin-top: 18px; }
+    .two-col-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+
+    .section-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-hd-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; }
+    .section-hd-icon.purple { background: var(--purple-light); color: var(--purple); }
+    .section-hd-icon.green { background: var(--green-light); color: var(--green); }
+    .section-hd-icon.amber { background: var(--amber-light); color: var(--amber); }
+    .section-hd h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); }
+    .section-hd-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    .card-pad { padding: 24px 26px; }
+
+    /* ── PATIENT LIST ── */
+    .patient-list { display: flex; flex-direction: column; gap: 0; }
+    .patient-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background .12s; border-radius: 8px;
+      padding-left: 8px; padding-right: 8px;
+    }
+    .patient-row:last-child { border-bottom: none; }
+    .patient-row:hover { background: var(--bg); }
+    .patient-avatar-wrap { position: relative; flex-shrink: 0; }
+    .patient-avatar {
+      width: 38px; height: 38px; border-radius: 10px; overflow: hidden;
+      border: 2px solid var(--border); flex-shrink: 0;
+    }
+    .patient-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .patient-status-dot {
+      position: absolute; bottom: -2px; right: -2px;
+      width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;
+    }
+    .status-dot-critical { background: var(--red); }
+    .status-dot-high { background: var(--amber); }
+    .status-dot-normal { background: var(--green); }
+    .patient-info { flex: 1; min-width: 0; }
+    .patient-name { font-size: 0.845rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .patient-meta { font-size: 0.75rem; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .patient-risk { flex-shrink: 0; }
+    .risk-pill { padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+    .risk-pill.low { background: var(--green-light); color: var(--green); }
+    .risk-pill.medium { background: var(--amber-light); color: var(--amber); }
+    .risk-pill.high { background: var(--red-light); color: var(--red); }
+    .btn-view { padding: 5px 11px; border-radius: 7px; font-size: 0.72rem; font-weight: 600; border: 1px solid var(--border); background: var(--white); color: var(--blue); cursor: pointer; transition: all .15s; flex-shrink: 0; }
+    .btn-view:hover { background: var(--blue-light); border-color: #c7d7fc; }
+
+    /* ── SCAN REVIEW PANEL ── */
+    .scan-queue { display: flex; flex-direction: column; gap: 10px; }
+    .scan-card {
+      padding: 14px 16px; border-radius: 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 14px;
+      cursor: pointer; transition: all .18s;
+    }
+    .scan-card:hover { background: var(--white); border-color: var(--border-dark); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+    .scan-thumb { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #e8f0fe, #dbeafe); border: 1px solid #c7d7fc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--blue); }
+    .scan-info { flex: 1; min-width: 0; }
+    .scan-patient { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .scan-type { font-size: 0.73rem; color: var(--text-3); margin-bottom: 6px; }
+    .scan-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .scan-tag { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+    .scan-tag.pending { background: var(--amber-light); color: var(--amber); }
+    .scan-tag.urgent { background: var(--red-light); color: var(--red); }
+    .scan-tag.review { background: var(--blue-light); color: var(--blue); }
+    .scan-time { font-size: 0.7rem; color: var(--text-3); white-space: nowrap; }
+
+    /* ── AI FINDINGS PANEL ── */
+    .findings-list { display: flex; flex-direction: column; gap: 10px; }
+    .finding-item {
+      padding: 14px 16px; border-radius: 14px; border-left: 3px solid var(--blue);
+      background: var(--bg); position: relative;
+    }
+    .finding-item.high { border-left-color: var(--red); background: #fff5f5; }
+    .finding-item.medium { border-left-color: var(--amber); background: #fffbf0; }
+    .finding-item.low { border-left-color: var(--green); background: #f0fdf4; }
+    .finding-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+    .finding-title { font-size: 0.84rem; font-weight: 700; color: var(--text); }
+    .finding-conf { font-size: 0.72rem; font-weight: 700; color: var(--blue); }
+    .finding-patient { font-size: 0.73rem; color: var(--text-3); margin-bottom: 4px; }
+    .finding-desc { font-size: 0.78rem; color: var(--text-2); line-height: 1.5; }
+    .finding-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+    /* ── APPOINTMENT TIMELINE ── */
+    .appt-list { display: flex; flex-direction: column; gap: 10px; }
+    .appt-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 12px 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border);
+      cursor: pointer; transition: all .18s;
+    }
+    .appt-item:hover { background: var(--white); border-color: var(--border-dark); }
+    .appt-item.next { background: var(--blue-light); border-color: #c7d7fc; }
+    .appt-time-col { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
+    .appt-time { font-size: 0.78rem; font-weight: 700; color: var(--blue); }
+    .appt-date { font-size: 0.65rem; color: var(--text-3); text-align: center; margin-top: 2px; }
+    .appt-vline { width: 1px; background: var(--border); flex: 1; margin-top: 4px; min-height: 12px; }
+    .appt-body { flex: 1; }
+    .appt-patient { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .appt-type { font-size: 0.73rem; color: var(--text-3); }
+    .appt-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 5px; display: inline-block; }
+    .appt-badge.followup { background: var(--blue-light); color: var(--blue); }
+    .appt-badge.new { background: var(--green-light); color: var(--green); }
+    .appt-badge.urgent { background: var(--red-light); color: var(--red); }
+    .appt-badge.consultation { background: var(--purple-light); color: var(--purple); }
+
+    /* ── ANALYTICS MINI ── */
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .analytics-card { padding: 16px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border); }
+    .analytics-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); margin-bottom: 8px; }
+    .analytics-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .analytics-sub { font-size: 0.73rem; color: var(--text-3); margin-top: 3px; }
+    .analytics-bar-wrap { margin-top: 10px; }
+    .mini-bar { height: 5px; background: var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 4px; }
+    .mini-bar-fill { height: 100%; border-radius: 20px; transition: width 0.8s; }
+    .mini-bar-fill.blue { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+    .mini-bar-fill.green { background: linear-gradient(90deg, var(--green), #34d399); }
+    .mini-bar-fill.amber { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+    .mini-bar-fill.red { background: linear-gradient(90deg, var(--red), #f87171); }
+    .mini-bar-lbl { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-3); }
+
+    /* ── REPORT WRITER ── */
+    .report-writer { padding: 24px 26px; }
+    .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); letter-spacing: 0.2px; }
+    .form-input {
+      background: rgba(255,255,255,0.48); backdrop-filter: blur(18px);
+      border: 1px solid rgba(210,225,248,0.75); border-radius: 12px;
+      padding: 10px 14px; font-size: 0.845rem; color: var(--text); outline: none;
+      transition: all .25s ease; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .form-input:focus { background: rgba(255,255,255,0.72); border-color: rgba(59,130,246,0.45); box-shadow: 0 0 0 4px rgba(59,130,246,0.08); }
+    .form-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-select {
+      background: rgba(255,255,255,0.48); border: 1px solid rgba(210,225,248,0.75);
+      border-radius: 12px; padding: 10px 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.845rem; color: var(--text); outline: none; transition: all .18s; cursor: pointer;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a96b0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 13px center;
+      background-color: rgba(255,255,255,0.48);
+    }
+    .form-divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+    /* Diagnosis chips */
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip { padding: 5px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 500; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; transition: all .15s; user-select: none; color: var(--text-2); }
+    .chip:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+    .chip.active { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue); font-weight: 600; }
+
+    /* Severity picker */
+    .severity-picker { display: flex; gap: 8px; }
+    .sev-btn { flex: 1; padding: 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; transition: all .18s; color: var(--text-2); text-align: center; }
+    .sev-btn:hover { border-color: var(--border-dark); }
+    .sev-btn.active.low { background: var(--green-light); border-color: #6ee7b7; color: var(--green); }
+    .sev-btn.active.medium { background: var(--amber-light); border-color: #fcd34d; color: var(--amber); }
+    .sev-btn.active.high { background: var(--red-light); border-color: #fca5a5; color: var(--red); }
+
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%; padding: 12px; border-radius: 11px;
+      background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+      color: white; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(26,86,219,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+      transition: all .2s;
+    }
+    .btn-primary:hover { box-shadow: 0 6px 18px rgba(26,86,219,0.4); transform: translateY(-1px); }
+
+    .btn-outline {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px; border: 1.5px solid var(--border-dark);
+      background: var(--white); font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-2); cursor: pointer; transition: all .18s;
+    }
+    .btn-outline:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+
+    .btn-sm { padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--border); background: var(--white); color: var(--text-2); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-sm:hover { background: var(--bg); border-color: var(--border-dark); }
+    .btn-sm.primary { background: var(--blue-light); border-color: #c7d7fc; color: var(--blue); }
+    .btn-sm.primary:hover { background: #c7d7fc; }
+    .btn-sm.danger { background: var(--red-light); border-color: #fca5a5; color: var(--red); }
+
+    /* ── FULL-WIDTH PATIENT TABLE ── */
+    .table-card { padding: 24px 26px; margin-top: 18px; }
+    .history-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-3); padding: 0 14px 11px; text-align: left; border-bottom: 1.5px solid var(--border); }
+    tbody tr { transition: background .12s; }
+    tbody tr:hover { background: var(--bg); cursor: pointer; }
+    tbody td { padding: 13px 14px; font-size: 0.845rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    .td-date { color: var(--text-3); font-size: 0.8rem; font-weight: 500; }
+    .td-bold { font-weight: 600; color: var(--text); }
+    .td-conf { font-weight: 700; color: var(--blue); font-size: 0.82rem; }
+    .td-age { color: var(--text-2); }
+    .status-tag { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
+    .status-tag.done { background: var(--green-light); color: var(--green); }
+    .status-tag.pending { background: var(--amber-light); color: var(--amber); }
+    .status-tag.critical { background: var(--red-light); color: var(--red); }
+    .status-tag.reviewing { background: var(--purple-light); color: var(--purple); }
+
+    /* ── AI ASSIST MODAL AREA ── */
+    .ai-assist-panel {
+      padding: 20px 22px; border-radius: 16px;
+      background: linear-gradient(135deg, #ede9fe 0%, #e8f0fe 100%);
+      border: 1px solid #c4b5fd; margin-top: 18px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .ai-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--purple), var(--blue)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+    .ai-text h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--purple); margin-bottom: 4px; }
+    .ai-text p { font-size: 0.8rem; color: #5b21b6; line-height: 1.55; margin-bottom: 10px; }
+    .ai-text-actions { display: flex; gap: 8px; }
+    .btn-ai { padding: 7px 14px; border-radius: 8px; font-size: 0.76rem; font-weight: 600; border: 1.5px solid #c4b5fd; background: rgba(255,255,255,0.6); color: var(--purple); cursor: pointer; transition: all .18s; }
+    .btn-ai:hover { background: rgba(255,255,255,0.9); border-color: var(--purple); }
+
+    /* ── RECENT NOTES ── */
+    .notes-list { display: flex; flex-direction: column; gap: 10px; }
+    .note-item { padding: 14px 16px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+    .note-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+    .note-patient { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .note-date { font-size: 0.7rem; color: var(--text-3); }
+    .note-text { font-size: 0.78rem; color: var(--text-2); line-height: 1.55; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    .hero { animation: fadeUp .5s ease both; }
+    .stats-row { animation: fadeUp .5s .08s ease both; }
+    .three-col { animation: fadeUp .5s .14s ease both; }
+    .two-col-equal { animation: fadeUp .5s .18s ease both; }
+    .table-card { animation: fadeUp .5s .22s ease both; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 99px; }
+
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <img src="{% static 'images/logo.png' %}" alt="UteroCare Logo">
+    <div class="sidebar-brand-text">
+      <h2><span class="utero">Utero</span><span class="care">Care</span></h2>
+      <p>AI Healthcare</p>
+    </div>
+  </div>
+
+  <!-- Doctor portal tag -->
+  <div class="doctor-portal-tag">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" color="#7c3aed"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span>Doctor Portal</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Clinical Menu</div>
+    <div class="nav-item active" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      My Patients
+      <span class="nav-badge">24</span>
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      AI Scan Reviews
+      <span class="nav-badge red">7</span>
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Appointments
+      <span class="nav-badge amber">3</span>
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Clinical Reports
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </div>
+
+    <div class="nav-section-label">Clinical Tools</div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Diagnosis Writer
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .94h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.14a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+      Referrals
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Second Opinion
+    </div>
+    <div class="nav-item" onclick="setActive(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      Settings
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="nav-logout">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </div>
+  </div>
+</aside>
+
+<!-- ── TOPNAV ── -->
+<header class="topnav">
+  <div class="search-box">
+    <svg width="14" height="14" fill="none" stroke="#8a96b0" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search patients, scans, diagnoses…" />
+  </div>
+  <div style="flex:1"></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="doc-verified-badge">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      Verified Doctor
+    </div>
+    <div class="nav-icon" title="Alerts">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <div class="dot"></div>
+    </div>
+    <div class="nav-icon" title="Messages">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    </div>
+    <div class="nav-profile">
+      <div class="nav-avatar">
+        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=60&h=60&fit=crop&crop=face" alt="Doctor" />
+      </div>
+      <div class="nav-profile-text">
+        <strong>Dr. Priya Menon</strong>
+        <span>Gynaecologist · #D-4421</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main">
+  <div class="page">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <div class="hero-badge-dot"></div>
+          Clinical AI Dashboard — Doctor Portal
+        </div>
+        <h2>Good Morning,<br>Dr. Priya Menon</h2>
+        <p>You have 3 appointments today and 7 AI scan reviews awaiting your clinical validation. 2 patients flagged as high priority.</p>
+        <div class="hero-stats-bar">
+          <div class="hero-stat-item">
+            <div class="hero-stat-val">24</div>
+            <div class="hero-stat-lbl">Active Patients</div>
+          </div>
+          <div class="hero-stat-sep"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-val">7</div>
+            <div class="hero-stat-lbl">Scan Reviews</div>
+          </div>
+          <div class="hero-stat-sep"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-val">3</div>
+            <div class="hero-stat-lbl">Today's Appts</div>
+          </div>
+          <div class="hero-stat-sep"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-val">97.4%</div>
+            <div class="hero-stat-lbl">AI Accuracy</div>
+          </div>
+        </div>
+      </div>
+      <!-- Right panel: Risk summary -->
+      <div class="hero-panels">
+        <div class="hero-panel">
+          <div class="hp-label">Patient Risk Summary</div>
+          <div class="hp-val">2 Critical · 5 High</div>
+          <div class="hp-sub">Needs immediate attention</div>
+          <div class="hp-dot-row">
+            <span class="hp-dot critical"></span><span class="hp-dot critical"></span>
+            <span class="hp-dot high"></span><span class="hp-dot high"></span><span class="hp-dot high"></span>
+            <span class="hp-dot high"></span><span class="hp-dot high"></span>
+            <span class="hp-dot normal"></span><span class="hp-dot normal"></span><span class="hp-dot normal"></span>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="hp-label">Next Appointment</div>
+          <div class="hp-val">Aisha Patel</div>
+          <div class="hp-sub">10:30 AM — Follow-up Ultrasound</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="sc-glow"></div>
+        <div class="sc-top">
+          <div class="sc-icon">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="sc-badge neutral">+3 this week</div>
+        </div>
+        <div class="sc-value">24</div>
+        <div class="sc-label">Total Active Patients</div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:72%"></div></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="sc-glow"></div>
+        <div class="sc-top">
+          <div class="sc-icon" style="color:#dc2626;background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.2);">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div class="sc-badge red">Urgent</div>
+        </div>
+        <div class="sc-value">7</div>
+        <div class="sc-label">Scans Awaiting Review</div>
+        <div class="sc-bar"><div class="sc-bar-fill red" style="width:87%"></div></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="sc-glow"></div>
+        <div class="sc-top">
+          <div class="sc-icon" style="color:var(--green);background:var(--green-light);border-color:#6ee7b7;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="sc-badge up">This month</div>
+        </div>
+        <div class="sc-value">38</div>
+        <div class="sc-label">Reports Validated</div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:63%;background:linear-gradient(90deg,var(--green),#34d399);"></div></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="sc-glow"></div>
+        <div class="sc-top">
+          <div class="sc-icon" style="color:var(--purple);background:var(--purple-light);border-color:#c4b5fd;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="sc-badge neutral" style="background:var(--purple-light);border-color:#c4b5fd;color:var(--purple);">AI Model</div>
+        </div>
+        <div class="sc-value">97.4<span>%</span></div>
+        <div class="sc-label">Diagnostic Accuracy</div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:97.4%;background:linear-gradient(90deg,var(--purple),#a78bfa);"></div></div>
+      </div>
+    </div>
+
+    <!-- THREE COL: Patient List | Scan Queue | Appointments -->
+    <div class="three-col">
+
+      <!-- Patient List -->
+      <div class="card card-pad">
+        <div class="section-hd">
+          <div class="section-hd-icon">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <h3>Active Patients</h3>
+          <div class="section-hd-actions">
+            <button class="btn-sm primary">View All</button>
+          </div>
+        </div>
+        <div class="patient-list">
+          <div class="patient-row" onclick="openPatient('sarah')">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop&crop=face" alt="Patient"></div>
+              <div class="patient-status-dot status-dot-critical"></div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">Sarah Jenkins</div>
+              <div class="patient-meta">32 yrs · Pelvic Pain · Last seen: 3 days ago</div>
+            </div>
+            <span class="risk-pill high">High</span>
+            <button class="btn-view">View</button>
+          </div>
+          <div class="patient-row">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face" alt="Patient"></div>
+              <div class="patient-status-dot status-dot-high"></div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">Aisha Patel</div>
+              <div class="patient-meta">28 yrs · Endometriosis · Appt: Today 10:30</div>
+            </div>
+            <span class="risk-pill medium">Medium</span>
+            <button class="btn-view">View</button>
+          </div>
+          <div class="patient-row">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60&fit=crop&crop=face" alt="Patient"></div>
+              <div class="patient-status-dot status-dot-normal"></div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">Meera Krishnan</div>
+              <div class="patient-meta">41 yrs · PCOS · Follow-up due in 2 weeks</div>
+            </div>
+            <span class="risk-pill low">Low</span>
+            <button class="btn-view">View</button>
+          </div>
+          <div class="patient-row">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&crop=face" alt="Patient"></div>
+              <div class="patient-status-dot status-dot-critical"></div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">Fatima Al-Hassan</div>
+              <div class="patient-meta">36 yrs · Uterine Fibroid · Critical scan pending</div>
+            </div>
+            <span class="risk-pill high">Critical</span>
+            <button class="btn-view">View</button>
+          </div>
+          <div class="patient-row">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar"><img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=60&h=60&fit=crop&crop=face" alt="Patient"></div>
+              <div class="patient-status-dot status-dot-normal"></div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">Preethi Nair</div>
+              <div class="patient-meta">25 yrs · Routine Screening · All clear</div>
+            </div>
+            <span class="risk-pill low">Low</span>
+            <button class="btn-view">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scan Review Queue -->
+      <div class="card card-pad">
+        <div class="section-hd">
+          <div class="section-hd-icon" style="background:var(--red-light);color:var(--red);">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <h3>Scan Review Queue</h3>
+          <div class="section-hd-actions">
+            <span style="font-size:0.72rem;color:var(--red);font-weight:700;background:var(--red-light);padding:3px 9px;border-radius:20px;">7 Pending</span>
+          </div>
+        </div>
+        <div class="scan-queue">
+          <div class="scan-card">
+            <div class="scan-thumb">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+            </div>
+            <div class="scan-info">
+              <div class="scan-patient">Fatima Al-Hassan</div>
+              <div class="scan-type">Transvaginal Ultrasound · MRI</div>
+              <div class="scan-tags">
+                <span class="scan-tag urgent">Urgent</span>
+                <span class="scan-tag pending">AI: 89% Fibroid</span>
+              </div>
+            </div>
+            <div class="scan-time">2h ago</div>
+          </div>
+          <div class="scan-card">
+            <div class="scan-thumb">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+            </div>
+            <div class="scan-info">
+              <div class="scan-patient">Sarah Jenkins</div>
+              <div class="scan-type">Pelvic Ultrasound</div>
+              <div class="scan-tags">
+                <span class="scan-tag review">Review</span>
+                <span class="scan-tag pending">AI: 94% Normal</span>
+              </div>
+            </div>
+            <div class="scan-time">5h ago</div>
+          </div>
+          <div class="scan-card">
+            <div class="scan-thumb">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+            </div>
+            <div class="scan-info">
+              <div class="scan-patient">Zara Mohammed</div>
+              <div class="scan-type">Endometrial Biopsy Report</div>
+              <div class="scan-tags">
+                <span class="scan-tag urgent">Urgent</span>
+                <span class="scan-tag pending">AI: 78% Polyp</span>
+              </div>
+            </div>
+            <div class="scan-time">Yesterday</div>
+          </div>
+          <div class="scan-card">
+            <div class="scan-thumb">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+            </div>
+            <div class="scan-info">
+              <div class="scan-patient">Aisha Patel</div>
+              <div class="scan-type">Laparoscopy Follow-up Scan</div>
+              <div class="scan-tags">
+                <span class="scan-tag review">Review</span>
+                <span class="scan-tag pending">AI: 91% Endo</span>
+              </div>
+            </div>
+            <div class="scan-time">Yesterday</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments -->
+      <div class="card card-pad">
+        <div class="section-hd">
+          <div class="section-hd-icon" style="background:var(--amber-light);color:var(--amber);">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Today's Schedule</h3>
+        </div>
+        <div class="appt-list">
+          <div class="appt-item">
+            <div class="appt-time-col">
+              <div class="appt-time">9:00</div>
+              <div class="appt-date">AM</div>
+              <div class="appt-vline"></div>
+            </div>
+            <div class="appt-body">
+              <div class="appt-patient">Meera Krishnan</div>
+              <div class="appt-type">PCOS Management Review</div>
+              <span class="appt-badge followup">Follow-up</span>
+            </div>
+          </div>
+          <div class="appt-item next">
+            <div class="appt-time-col">
+              <div class="appt-time">10:30</div>
+              <div class="appt-date">AM</div>
+              <div class="appt-vline"></div>
+            </div>
+            <div class="appt-body">
+              <div class="appt-patient">Aisha Patel</div>
+              <div class="appt-type">Endometriosis Follow-up + Ultrasound Review</div>
+              <span class="appt-badge consultation">Next Up</span>
+            </div>
+          </div>
+          <div class="appt-item">
+            <div class="appt-time-col">
+              <div class="appt-time">2:00</div>
+              <div class="appt-date">PM</div>
+            </div>
+            <div class="appt-body">
+              <div class="appt-patient">New Patient: Divya Raj</div>
+              <div class="appt-type">Initial Gynaecological Consultation</div>
+              <span class="appt-badge new">New Patient</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini analytics in this card -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-3);margin-bottom:12px;">Case Distribution</div>
+          <div class="analytics-bar-wrap">
+            <div class="mini-bar-lbl" style="margin-bottom:4px;"><span>Endometriosis</span><span>38%</span></div>
+            <div class="mini-bar"><div class="mini-bar-fill blue" style="width:38%"></div></div>
+            <div class="mini-bar-lbl" style="margin-top:8px;margin-bottom:4px;"><span>Fibroids</span><span>27%</span></div>
+            <div class="mini-bar"><div class="mini-bar-fill amber" style="width:27%"></div></div>
+            <div class="mini-bar-lbl" style="margin-top:8px;margin-bottom:4px;"><span>PCOS</span><span>22%</span></div>
+            <div class="mini-bar"><div class="mini-bar-fill green" style="width:22%"></div></div>
+            <div class="mini-bar-lbl" style="margin-top:8px;margin-bottom:4px;"><span>Polyps / Other</span><span>13%</span></div>
+            <div class="mini-bar"><div class="mini-bar-fill red" style="width:13%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TWO COL: Diagnosis Writer | AI Findings -->
+    <div class="two-col-equal">
+
+      <!-- Diagnosis Report Writer -->
+      <div class="card">
+        <div class="report-writer">
+          <div class="section-hd">
+            <div class="section-hd-icon purple">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            </div>
+            <h3>Diagnosis Report Writer</h3>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Select Patient</label>
+              <select class="form-select">
+                <option>Sarah Jenkins — #8821</option>
+                <option selected>Aisha Patel — #8834</option>
+                <option>Meera Krishnan — #8802</option>
+                <option>Fatima Al-Hassan — #8819</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Diagnosis Type</label>
+              <select class="form-select">
+                <option>Initial Assessment</option>
+                <option selected>Follow-up Report</option>
+                <option>Post-Procedure Report</option>
+                <option>Emergency Assessment</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Primary Diagnosis</label>
+            <div class="chips-wrap">
+              <div class="chip active" onclick="toggleChip(this)">Endometriosis</div>
+              <div class="chip" onclick="toggleChip(this)">Uterine Fibroids</div>
+              <div class="chip" onclick="toggleChip(this)">PCOS</div>
+              <div class="chip" onclick="toggleChip(this)">Cervical Polyps</div>
+              <div class="chip" onclick="toggleChip(this)">Normal</div>
+              <div class="chip" onclick="toggleChip(this)">Adenomyosis</div>
+              <div class="chip" onclick="toggleChip(this)">Ovarian Cyst</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Severity Assessment</label>
+            <div class="severity-picker">
+              <div class="sev-btn low" onclick="setSeverity(this,'low')">Mild</div>
+              <div class="sev-btn active medium" onclick="setSeverity(this,'medium')">Moderate</div>
+              <div class="sev-btn high" onclick="setSeverity(this,'high')">Severe</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Clinical Notes</label>
+            <textarea class="form-input form-textarea" placeholder="Document clinical observations, examination findings, and differential diagnosis considerations…"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Recommended Treatment</label>
+              <select class="form-select">
+                <option>Medical management</option>
+                <option selected>Hormonal therapy</option>
+                <option>Surgical intervention</option>
+                <option>Watchful waiting</option>
+                <option>Refer to specialist</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Next Review Date</label>
+              <input type="date" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn-outline" style="flex:1;" id="draftBtn" onclick="draftReport()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              AI Draft
+            </button>
+            <button class="btn-primary" style="flex:2;" id="submitReportBtn" onclick="submitReport()">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              Submit Clinical Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Findings & Recent Notes -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <!-- AI Findings -->
+        <div class="card card-pad">
+          <div class="section-hd">
+            <div class="section-hd-icon purple">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h3>AI Findings — Flagged</h3>
+          </div>
+          <div class="findings-list">
+            <div class="finding-item high">
+              <div class="finding-header">
+                <div class="finding-title">Suspected Uterine Fibroid</div>
+                <div class="finding-conf" style="color:var(--red);">89.2% Confidence</div>
+              </div>
+              <div class="finding-patient">Fatima Al-Hassan · Scan: Oct 24, 2023</div>
+              <div class="finding-desc">Multiple hypoechoic masses detected in the anterior myometrium. Largest lesion approximately 3.2 cm. Requires urgent clinical review.</div>
+              <div class="finding-actions">
+                <button class="btn-sm danger">Flag Critical</button>
+                <button class="btn-sm primary">Review Scan</button>
+              </div>
+            </div>
+            <div class="finding-item medium">
+              <div class="finding-header">
+                <div class="finding-title">Possible Endometrial Polyp</div>
+                <div class="finding-conf" style="color:var(--amber);">78.1% Confidence</div>
+              </div>
+              <div class="finding-patient">Zara Mohammed · Scan: Oct 23, 2023</div>
+              <div class="finding-desc">Focal endometrial thickening noted at the fundal region. Biopsy correlation recommended.</div>
+              <div class="finding-actions">
+                <button class="btn-sm primary">Review Scan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Notes -->
+        <div class="card card-pad" style="height:fit-content;">
+          <div class="section-hd">
+            <div class="section-hd-icon green">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <h3>Recent Clinical Notes</h3>
+          </div>
+          <div class="notes-list">
+            <div class="note-item">
+              <div class="note-header">
+                <div class="note-patient">Meera Krishnan</div>
+                <div class="note-date">Oct 24, 2023</div>
+              </div>
+              <div class="note-text">Patient responding well to metformin. Cycle regularity improving. Schedule repeat HbA1c in 3 months. Continue lifestyle counselling.</div>
+            </div>
+            <div class="note-item">
+              <div class="note-header">
+                <div class="note-patient">Sarah Jenkins</div>
+                <div class="note-date">Oct 22, 2023</div>
+              </div>
+              <div class="note-text">Transvaginal ultrasound within normal limits. Pelvic pain likely musculoskeletal in origin. Prescribed NSAIDs and physiotherapy referral made.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ASSIST PANEL -->
+    <div class="ai-assist-panel">
+      <div class="ai-icon">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <div class="ai-text">
+        <h4>AI Clinical Assistant</h4>
+        <p>Based on today's scan reviews and patient profiles, the AI model has identified 2 high-priority cases requiring immediate attention: Fatima Al-Hassan (probable fibroid, 89.2%) and Zara Mohammed (probable polyp, 78.1%). AI recommendations are advisory — always apply your clinical judgement.</p>
+        <div class="ai-text-actions">
+          <button class="btn-ai">Generate Summary</button>
+          <button class="btn-ai">Suggest Differential</button>
+          <button class="btn-ai">Draft Referral Letter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL PATIENT TABLE -->
+    <div class="card table-card">
+      <div class="history-hd">
+        <div class="section-hd" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">
+          <div class="section-hd-icon">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>Patient Case History</h3>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm primary">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+          <button class="btn-sm">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filter
+          </button>
+          <button class="btn-sm">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Age</th>
+            <th>Condition</th>
+            <th>AI Confidence</th>
+            <th>Last Scan</th>
+            <th>Risk</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">Fatima Al-Hassan</td>
+            <td class="td-age">36</td>
+            <td>Uterine Fibroids</td>
+            <td class="td-conf" style="color:var(--red);">89.2%</td>
+            <td class="td-date">Oct 24, 2023</td>
+            <td><span class="risk-pill high">Critical</span></td>
+            <td><span class="status-tag critical">Urgent Review</span></td>
+            <td><button class="btn-sm primary">Review</button></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Zara Mohammed</td>
+            <td class="td-age">44</td>
+            <td>Endometrial Polyp</td>
+            <td class="td-conf" style="color:var(--amber);">78.1%</td>
+            <td class="td-date">Oct 23, 2023</td>
+            <td><span class="risk-pill medium">High</span></td>
+            <td><span class="status-tag pending">Awaiting Review</span></td>
+            <td><button class="btn-sm primary">Review</button></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Aisha Patel</td>
+            <td class="td-age">28</td>
+            <td>Endometriosis Stage II</td>
+            <td class="td-conf">91.0%</td>
+            <td class="td-date">Oct 22, 2023</td>
+            <td><span class="risk-pill medium">Medium</span></td>
+            <td><span class="status-tag reviewing">In Review</span></td>
+            <td><button class="btn-sm primary">View</button></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Sarah Jenkins</td>
+            <td class="td-age">32</td>
+            <td>Normal Uterine Health</td>
+            <td class="td-conf">98.2%</td>
+            <td class="td-date">Oct 21, 2023</td>
+            <td><span class="risk-pill low">Low</span></td>
+            <td><span class="status-tag done">Validated</span></td>
+            <td><button class="btn-sm">View</button></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Meera Krishnan</td>
+            <td class="td-age">41</td>
+            <td>PCOS — Managed</td>
+            <td class="td-conf">94.5%</td>
+            <td class="td-date">Oct 14, 2023</td>
+            <td><span class="risk-pill low">Low</span></td>
+            <td><span class="status-tag done">Validated</span></td>
+            <td><button class="btn-sm">View</button></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Preethi Nair</td>
+            <td class="td-age">25</td>
+            <td>Routine Screening</td>
+            <td class="td-conf">96.8%</td>
+            <td class="td-date">Oct 10, 2023</td>
+            <td><span class="risk-pill low">Low</span></td>
+            <td><span class="status-tag done">Validated</span></td>
+            <td><button class="btn-sm">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page -->
+</main>
+
+<script>
+  function setActive(el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function toggleChip(el) { el.classList.toggle('active'); }
+
+  function setSeverity(el, level) {
+    document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active','low','medium','high'));
+    el.classList.add('active', level);
+  }
+
+  function openPatient(id) {
+    // Navigate to patient detail page
+  }
+
+  function draftReport() {
+    const btn = document.getElementById('draftBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Generating…`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> AI Draft Ready`;
+      btn.style.background = 'var(--green-light)';
+      btn.style.borderColor = '#6ee7b7';
+      btn.style.color = 'var(--green)';
+      // Populate textarea
+      document.querySelector('.form-textarea').value = 'Patient presents with stage II endometriosis confirmed via laparoscopy. Pelvic pain (VAS 7/10) with associated dysmenorrhoea and deep dyspareunia. AI scan analysis (91% confidence) corroborates surgical findings. Initiating hormonal suppression therapy with GnRH analogue. Follow-up transvaginal ultrasound in 6 weeks. Patient counselled regarding fertility implications and long-term management options.';
+    }, 1800);
+  }
+
+  function submitReport() {
+    const btn = document.getElementById('submitReportBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Submitting…`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.style.background = 'linear-gradient(135deg,var(--green),#10b981)';
+      btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Report Submitted & Signed`;
+    }, 2200);
+  }
+</script>
+</body>
+</html>

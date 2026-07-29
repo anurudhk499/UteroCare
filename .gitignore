@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django
+media/
+staticfiles/
+
+# Training datasets
+**/preprocessed_dataset/
+**/preprocessed_dataset_v2/
+**/processed_dataset/
+**/processed_dataset_v2/
+**/dataset/
+**/datasets/
+**/uterus_dataset/
+
+# Training outputs
+**/outputs/
+**/runs/
+**/checkpoints/
+
+# Training CSVs
+**/fusion_dataset.csv
+**/uterine_disease_dataset.csv
+
+# Training scripts
+**/train.py
+**/*train*.py
+**/evaluate.py
+**/inspect_model.py
+
+# Database
+AIML/db.sqlite3
+
+# FAISS vector database (can be regenerated)
+AIML/ai_app/vector_db/
+
+# Training reports/images
+AIML/ai_app/symptom_model_results/*.png
+AIML/ai_app/symptom_model_results/*.csv
+AIML/ai_app/symptom_model_results/*.txt
+AIML/ai_app/symptom_model_results/*config.json
+
+# Misc
+project_structure.txt
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Unused training models
+AIML/aiml/models/baseline_model.pth
+AIML/aiml/models/best_model.pth
+AIML/aiml/models_v2/best_model_v2.pth
+AIML/aiml/src/mri_model/models/best_model.pth
+AIML/aiml/src/mri_model/models/last_model.pth
+models/baseline_model.pth

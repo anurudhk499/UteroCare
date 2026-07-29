@@ -1,0 +1,239 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}My Files — UteroCare{% endblock %}
+
+{% block extra_style %}
+/* ── MY FILES PAGE ── */
+.files-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:14px;}
+.files-search{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.8);border:1px solid rgba(96,165,250,.16);border-radius:16px;padding:0 16px;height:48px;box-shadow:0 8px 20px rgba(37,99,235,.05);}
+.files-search input{border:none;outline:none;background:transparent;font-size:.86rem;color:#17305c;width:100%;font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* Drag-drop zone */
+.dropzone{
+  border-radius:26px;min-height:160px;
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.48));
+  border:1.5px dashed rgba(59,130,246,.28);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:24px;position:relative;overflow:hidden;
+  transition:.3s ease;cursor:pointer;
+}
+.dropzone:hover,.dropzone.dragover{border-color:#2563eb;background:rgba(239,246,255,.9);transform:translateY(-2px);box-shadow:0 16px 35px rgba(37,99,235,.08);}
+.dropzone-content{text-align:center;padding:20px;}
+.dropzone-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;font-size:1.4rem;box-shadow:0 14px 30px rgba(37,99,235,.2);}
+.dropzone-content h3{font-size:1rem;font-weight:700;color:#17305c;margin-bottom:4px;}
+.dropzone-content p{font-size:.8rem;color:#6b7a96;}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+/* File grid */
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.file-card{padding:0;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.55);backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.82);box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 8px 22px rgba(29,78,216,.07),0 18px 42px rgba(29,78,216,.06);transition:transform .26s cubic-bezier(.22,.68,0,1.2),box-shadow .26s ease;animation:fadeUp .5s ease both;}
+.file-card:hover{transform:translateY(-5px);box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 16px 36px rgba(29,78,216,.13),0 30px 70px rgba(29,78,216,.09);}
+.file-thumb{height:140px;background:linear-gradient(145deg,#f8fbff,#eef4ff);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.file-thumb img{width:100%;height:100%;object-fit:cover;}
+.file-thumb i{font-size:2.2rem;color:#9bb4e8;}
+.file-type-badge{position:absolute;top:10px;left:10px;font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);color:#2563eb;text-transform:uppercase;letter-spacing:.5px;}
+.file-info{padding:14px 16px;}
+.file-name{font-size:.84rem;font-weight:700;color:#17305c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.file-meta{font-size:.7rem;color:#94a3b8;}
+.file-actions{display:flex;gap:6px;padding:0 16px 14px;}
+.file-actions .btn-sm{flex:1;justify-content:center;font-size:.7rem;padding:6px 10px;}
+.file-actions .btn-sm.danger{background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.15);color:#dc2626;}
+.file-actions .btn-sm.danger:hover{background:rgba(220,38,38,.12);}
+
+/* Storage usage */
+.storage-card{padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:24px;}
+.storage-ring{position:relative;width:64px;height:64px;flex-shrink:0;}
+.storage-ring svg{width:100%;height:100%;}
+.storage-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#17305c;}
+.storage-details{flex:1;}
+.storage-details h4{font-size:.88rem;font-weight:700;color:#17305c;margin-bottom:4px;}
+.storage-details p{font-size:.76rem;color:#94a3b8;}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fa-solid fa-folder-open"></i></div>
+    <div class="page-header-left">
+      <h1>My Files</h1>
+      <p>MRI scans and documents uploaded by {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<!-- STORAGE USAGE -->
+<div class="card storage-card stagger-1">
+  <div class="storage-ring">
+    <svg viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+      <circle cx="32" cy="32" r="27" fill="none" stroke="#2563eb" stroke-width="6"
+              stroke-dasharray="169.6" stroke-dashoffset="118.7"
+              stroke-linecap="round" transform="rotate(-90 32 32)"/>
+    </svg>
+    <div class="storage-center">30%</div>
+  </div>
+  <div class="storage-details">
+    <h4>Storage Usage</h4>
+    <p>1.5 GB of 5 GB used · {{ total_predictions|default:"0" }} MRI scans and reports stored securely</p>
+  </div>
+  <button class="btn-sm primary"><i class="fa-solid fa-arrow-up-right-from-square"></i> Upgrade Storage</button>
+</div>
+
+<!-- DRAG-DROP ZONE -->
+<div class="dropzone" id="fileDropzone">
+  <div class="dropzone-content">
+    <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+    <h3>Drag &amp; drop files here, or click to browse</h3>
+    <p>Supports DICOM, JPG, PNG and PDF — MRI scans, reports, and documents</p>
+  </div>
+  <input type="file" id="fileUploadInput" multiple accept=".dcm,.jpg,.jpeg,.png,.pdf">
+</div>
+
+<!-- TOOLBAR -->
+<div class="files-toolbar">
+  <div class="files-search">
+    <svg width="15" height="15" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="fileSearchInput" placeholder="Search files…">
+  </div>
+  <div style="display:flex;gap:8px;">
+    <div class="pred-filter-chip active btn-sm primary" data-filter="all" onclick="filterFiles('all', this)">All Files</div>
+    <div class="btn-sm" data-filter="mri" onclick="filterFiles('mri', this)">MRI Scans</div>
+    <div class="btn-sm" data-filter="report" onclick="filterFiles('report', this)">Reports</div>
+  </div>
+</div>
+
+<!-- FILE GRID -->
+<div class="files-grid" id="filesGrid">
+
+  {% for p in predictions %}
+  <div class="file-card stagger-{{ forloop.counter|add:'0' }}" data-type="mri" data-name="MRI Scan {{ forloop.counter }}">
+    <div class="file-thumb">
+      {% if p.mri_image %}
+        <img src="{{ p.mri_image }}" alt="MRI scan">
+      {% else %}
+        <i class="fa-solid fa-x-ray"></i>
+      {% endif %}
+      <span class="file-type-badge">MRI</span>
+    </div>
+    <div class="file-info">
+      <div class="file-name">MRI_Scan_{{ p.analyzed_at|date:"Ymd" }}.jpg</div>
+      <div class="file-meta">{{ p.analyzed_at|date:"M d, Y" }} · {{ p.disease }}</div>
+    </div>
+    <div class="file-actions">
+      <button class="btn-sm"><i class="fa-solid fa-eye"></i> View</button>
+      <button class="btn-sm"><i class="fa-solid fa-download"></i></button>
+      <button class="btn-sm danger" onclick="deleteFile(this)"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>
+
+  <div class="file-card stagger-{{ forloop.counter|add:'1' }}" data-type="report" data-name="AI Report {{ forloop.counter }}">
+    <div class="file-thumb">
+      <i class="fa-solid fa-file-medical" style="color:#2563eb;"></i>
+      <span class="file-type-badge">PDF</span>
+    </div>
+    <div class="file-info">
+      <div class="file-name">AI_Report_{{ p.analyzed_at|date:"Ymd" }}.pdf</div>
+      <div class="file-meta">{{ p.analyzed_at|date:"M d, Y" }} · Risk {{ p.fusion_risk_score }}%</div>
+    </div>
+    <div class="file-actions">
+      <button class="btn-sm primary" onclick="window.location.href='{% url 'reports' %}?prediction_id={{ forloop.counter0 }}'"><i class="fa-solid fa-eye"></i> View</button>
+      <button class="btn-sm" onclick="window.print()"><i class="fa-solid fa-download"></i></button>
+      <button class="btn-sm danger" onclick="deleteFile(this)"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#94a3b8;">
+    <i class="fa-solid fa-folder-open" style="font-size:2.6rem;color:#c7d7fc;margin-bottom:14px;display:block;"></i>
+    <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;color:#17305c;margin-bottom:8px;">No files yet</h3>
+    <p>Upload an MRI scan from the dashboard or drag files here to get started.</p>
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ── Drag and drop ──────────────────────────────
+const dropzone = document.getElementById('fileDropzone');
+const fileInput = document.getElementById('fileUploadInput');
+
+['dragenter','dragover'].forEach(evt => {
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+});
+['dragleave','drop'].forEach(evt => {
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+});
+dropzone.addEventListener('drop', e => {
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+function handleFiles(files) {
+  if (!files.length) return;
+  Array.from(files).forEach(file => {
+    const isImage = file.type.startsWith('image/');
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    card.dataset.type = 'mri';
+    card.dataset.name = file.name;
+    card.style.animation = 'fadeUp .4s ease';
+
+    let thumbContent = `<i class="fa-solid fa-file"></i><span class="file-type-badge">${file.name.split('.').pop().toUpperCase()}</span>`;
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = card.querySelector('.file-thumb img');
+        if (img) img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      thumbContent = `<img src="" alt="${file.name}"><span class="file-type-badge">IMG</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="file-thumb">${thumbContent}</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">Just uploaded · ${(file.size/1024).toFixed(1)} KB</div>
+      </div>
+      <div class="file-actions">
+        <button class="btn-sm"><i class="fa-solid fa-eye"></i> View</button>
+        <button class="btn-sm"><i class="fa-solid fa-download"></i></button>
+        <button class="btn-sm danger" onclick="deleteFile(this)"><i class="fa-solid fa-trash"></i></button>
+      </div>`;
+
+    document.getElementById('filesGrid').prepend(card);
+  });
+  showSuccess(`${files.length} file(s) uploaded successfully.`);
+}
+
+// ── Delete file ────────────────────────────────
+function deleteFile(btn) {
+  const card = btn.closest('.file-card');
+  card.style.transition = 'opacity .3s ease, transform .3s ease';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(.9)';
+  setTimeout(() => card.remove(), 300);
+  showSuccess('File deleted.');
+}
+
+// ── Filter files ────────────────────────────────
+function filterFiles(type, el) {
+  document.querySelectorAll('.files-toolbar .btn-sm').forEach(b => b.classList.remove('primary'));
+  el.classList.add('primary');
+  document.querySelectorAll('.file-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+  });
+}
+
+// ── Search files ────────────────────────────────
+document.getElementById('fileSearchInput').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.file-card').forEach(card => {
+    card.style.display = card.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

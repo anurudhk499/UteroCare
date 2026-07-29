@@ -1,0 +1,305 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Medications — UteroCare{% endblock %}
+
+{% block extra_style %}
+/* ── MEDICATIONS PAGE ── */
+.med-layout{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start;}
+@media(max-width:1100px){.med-layout{grid-template-columns:1fr;}}
+
+.med-list{display:flex;flex-direction:column;gap:14px;}
+.med-card{padding:20px;display:flex;align-items:center;gap:18px;}
+.med-icon{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;box-shadow:0 10px 22px rgba(37,99,235,.12);}
+.med-icon.purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#fff;}
+.med-icon.blue{background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;}
+.med-icon.teal{background:linear-gradient(135deg,#0d9488,#2dd4bf);color:#fff;}
+.med-icon.amber{background:linear-gradient(135deg,#d97706,#fbbf24);color:#fff;}
+
+.med-details{flex:1;min-width:0;}
+.med-name{font-family:'Bricolage Grotesque',sans-serif;font-size:1rem;font-weight:800;color:#102348;}
+.med-dosage{font-size:.78rem;color:#64748b;margin-top:2px;}
+.med-schedule{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.med-time-chip{font-size:.66rem;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(37,99,235,.06);color:#2563eb;border:1px solid rgba(37,99,235,.12);}
+.med-time-chip.taken{background:rgba(5,150,105,.08);color:#059669;border-color:rgba(5,150,105,.15);}
+
+.med-progress-wrap{width:120px;flex-shrink:0;text-align:center;}
+.med-progress-ring{position:relative;width:64px;height:64px;margin:0 auto 6px;}
+.med-progress-ring svg{width:100%;height:100%;}
+.med-progress-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#17305c;}
+.med-progress-label{font-size:.64rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+
+.med-toggle-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid rgba(96,165,250,.18);background:rgba(255,255,255,.8);color:#2563eb;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s ease;flex-shrink:0;}
+.med-toggle-btn:hover{background:#eff6ff;transform:translateY(-2px);}
+.med-toggle-btn.completed{background:rgba(5,150,105,.10);border-color:rgba(5,150,105,.2);color:#059669;}
+
+/* Add medication form */
+.add-med-card{padding:24px;}
+.add-med-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1.05rem;font-weight:800;color:#102348;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.add-med-form .input-group{margin-bottom:16px;}
+.add-med-form label{display:block;font-size:.82rem;font-weight:700;color:#28446f;margin-bottom:8px;}
+.add-med-form input,.add-med-form select{
+  width:100%;border:none;border-radius:14px;padding:0 16px;height:50px;
+  background:rgba(255,255,255,.85);border:1px solid rgba(96,165,250,.14);
+  font-size:.86rem;color:#17305c;font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:0 6px 16px rgba(37,99,235,.04);transition:.25s ease;
+}
+.add-med-form input:focus,.add-med-form select:focus{outline:none;border-color:rgba(37,99,235,.35);box-shadow:0 0 0 4px rgba(96,165,250,.12);}
+
+/* Weekly adherence */
+.adherence-card{padding:20px;margin-top:18px;}
+.adherence-title{font-size:.82rem;font-weight:800;color:#17305c;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.adherence-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.adherence-day{text-align:center;}
+.adherence-day-label{font-size:.62rem;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;}
+.adherence-day-dot{width:28px;height:28px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;font-weight:700;}
+.adherence-day-dot.full{background:linear-gradient(135deg,#059669,#34d399);}
+.adherence-day-dot.partial{background:linear-gradient(135deg,#f59e0b,#fbbf24);}
+.adherence-day-dot.missed{background:#e2e8f0;color:#94a3b8;}
+.adherence-day-dot.future{background:#f1f5f9;color:#cbd5e1;border:1px dashed #cbd5e1;}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fa-solid fa-pills"></i></div>
+    <div class="page-header-left">
+      <h1>Medications</h1>
+      <p>Track dosage schedules and adherence for {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<div class="med-layout">
+
+  <!-- LEFT: Medication list -->
+  <div>
+    <div class="med-list">
+
+      <div class="card med-card stagger-1">
+        <div class="med-icon purple"><i class="fa-solid fa-capsules"></i></div>
+        <div class="med-details">
+          <div class="med-name">Naproxen 250mg</div>
+          <div class="med-dosage">For pain management · Take with food</div>
+          <div class="med-schedule">
+            <span class="med-time-chip taken">8:00 AM ✓</span>
+            <span class="med-time-chip">8:00 PM</span>
+          </div>
+        </div>
+        <div class="med-progress-wrap">
+          <div class="med-progress-ring">
+            <svg viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#2563eb" stroke-width="6"
+                      stroke-dasharray="169.6" stroke-dashoffset="84.8"
+                      stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            </svg>
+            <div class="med-progress-center">50%</div>
+          </div>
+          <div class="med-progress-label">Today</div>
+        </div>
+        <div class="med-toggle-btn" onclick="toggleMed(this)" title="Mark as taken">
+          <i class="fa-solid fa-check"></i>
+        </div>
+      </div>
+
+      <div class="card med-card stagger-2">
+        <div class="med-icon blue"><i class="fa-solid fa-tablets"></i></div>
+        <div class="med-details">
+          <div class="med-name">Iron Supplement 65mg</div>
+          <div class="med-dosage">For anemia support · Once daily</div>
+          <div class="med-schedule">
+            <span class="med-time-chip taken">9:00 AM ✓</span>
+          </div>
+        </div>
+        <div class="med-progress-wrap">
+          <div class="med-progress-ring">
+            <svg viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#10b981" stroke-width="6"
+                      stroke-dasharray="169.6" stroke-dashoffset="0"
+                      stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            </svg>
+            <div class="med-progress-center">100%</div>
+          </div>
+          <div class="med-progress-label">Today</div>
+        </div>
+        <div class="med-toggle-btn completed" title="Completed">
+          <i class="fa-solid fa-check"></i>
+        </div>
+      </div>
+
+      <div class="card med-card stagger-3">
+        <div class="med-icon teal"><i class="fa-solid fa-syringe"></i></div>
+        <div class="med-details">
+          <div class="med-name">Hormonal Therapy — GnRH Agonist</div>
+          <div class="med-dosage">Monthly injection · Prescribed by Dr. Sharma</div>
+          <div class="med-schedule">
+            <span class="med-time-chip">Next dose: Jun 28</span>
+          </div>
+        </div>
+        <div class="med-progress-wrap">
+          <div class="med-progress-ring">
+            <svg viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#0d9488" stroke-width="6"
+                      stroke-dasharray="169.6" stroke-dashoffset="42.4"
+                      stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            </svg>
+            <div class="med-progress-center">75%</div>
+          </div>
+          <div class="med-progress-label">Cycle</div>
+        </div>
+        <div class="med-toggle-btn" title="View details">
+          <i class="fa-solid fa-ellipsis"></i>
+        </div>
+      </div>
+
+      <div class="card med-card stagger-4">
+        <div class="med-icon amber"><i class="fa-solid fa-mortar-pestle"></i></div>
+        <div class="med-details">
+          <div class="med-name">Tranexamic Acid 500mg</div>
+          <div class="med-dosage">For heavy bleeding · As needed during cycle</div>
+          <div class="med-schedule">
+            <span class="med-time-chip">As needed</span>
+          </div>
+        </div>
+        <div class="med-progress-wrap">
+          <div class="med-progress-ring">
+            <svg viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#d97706" stroke-width="6"
+                      stroke-dasharray="169.6" stroke-dashoffset="169.6"
+                      stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            </svg>
+            <div class="med-progress-center">0%</div>
+          </div>
+          <div class="med-progress-label">Today</div>
+        </div>
+        <div class="med-toggle-btn" onclick="toggleMed(this)" title="Mark as taken">
+          <i class="fa-solid fa-check"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Weekly adherence -->
+    <div class="card adherence-card stagger-5">
+      <div class="adherence-title"><i class="fa-solid fa-calendar-week" style="color:#2563eb;"></i> This Week's Adherence</div>
+      <div class="adherence-week">
+        <div class="adherence-day"><div class="adherence-day-label">Mon</div><div class="adherence-day-dot full"><i class="fa-solid fa-check"></i></div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Tue</div><div class="adherence-day-dot full"><i class="fa-solid fa-check"></i></div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Wed</div><div class="adherence-day-dot partial">½</div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Thu</div><div class="adherence-day-dot full"><i class="fa-solid fa-check"></i></div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Fri</div><div class="adherence-day-dot missed"><i class="fa-solid fa-xmark"></i></div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Sat</div><div class="adherence-day-dot partial">½</div></div>
+        <div class="adherence-day"><div class="adherence-day-label">Sun</div><div class="adherence-day-dot future">--</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Add medication -->
+  <div class="card add-med-card stagger-2">
+    <div class="add-med-title"><i class="fa-solid fa-plus-circle" style="color:#2563eb;"></i> Add Medication</div>
+    <div class="add-med-form">
+      <div class="input-group">
+        <label>Medication Name</label>
+        <input type="text" id="medName" placeholder="e.g. Ibuprofen 200mg">
+      </div>
+      <div class="input-group">
+        <label>Purpose / Notes</label>
+        <input type="text" id="medPurpose" placeholder="e.g. For cramping relief">
+      </div>
+      <div class="input-group">
+        <label>Frequency</label>
+        <select id="medFrequency">
+          <option>Once Daily</option>
+          <option>Twice Daily</option>
+          <option>Three Times Daily</option>
+          <option>As Needed</option>
+          <option>Weekly</option>
+          <option>Monthly</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Reminder Time</label>
+        <input type="time" id="medTime">
+      </div>
+      <button class="btn-premium" style="width:100%;" onclick="addMedication()">
+        <i class="fa-solid fa-floppy-disk"></i> Save Medication
+      </button>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ── Toggle medication taken state ─────────────
+function toggleMed(btn) {
+  btn.classList.toggle('completed');
+  const card = btn.closest('.med-card');
+  const ring = card.querySelector('.med-progress-ring circle:nth-child(2)');
+  const label = card.querySelector('.med-progress-center');
+  if (btn.classList.contains('completed')) {
+    ring.setAttribute('stroke-dashoffset', '0');
+    label.textContent = '100%';
+    showSuccess('Marked as taken. Great job staying on track!');
+  } else {
+    ring.setAttribute('stroke-dashoffset', '84.8');
+    label.textContent = '50%';
+  }
+}
+
+// ── Add medication ─────────────────────────────
+function addMedication() {
+  const name = document.getElementById('medName').value;
+  const purpose = document.getElementById('medPurpose').value;
+  const freq = document.getElementById('medFrequency').value;
+  const time = document.getElementById('medTime').value;
+
+  if (!name) {
+    showError('Please enter a medication name.');
+    return;
+  }
+
+  const timeStr = time ? new Date('2000-01-01T' + time).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}) : freq;
+
+  const card = document.createElement('div');
+  card.className = 'card med-card';
+  card.style.animation = 'fadeUp .4s ease';
+  card.innerHTML = `
+    <div class="med-icon blue"><i class="fa-solid fa-pills"></i></div>
+    <div class="med-details">
+      <div class="med-name">${name}</div>
+      <div class="med-dosage">${purpose || freq}</div>
+      <div class="med-schedule"><span class="med-time-chip">${timeStr}</span></div>
+    </div>
+    <div class="med-progress-wrap">
+      <div class="med-progress-ring">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="27" fill="none" stroke="#e4e9f2" stroke-width="6"/>
+          <circle cx="32" cy="32" r="27" fill="none" stroke="#2563eb" stroke-width="6"
+                  stroke-dasharray="169.6" stroke-dashoffset="169.6"
+                  stroke-linecap="round" transform="rotate(-90 32 32)"/>
+        </svg>
+        <div class="med-progress-center">0%</div>
+      </div>
+      <div class="med-progress-label">Today</div>
+    </div>
+    <div class="med-toggle-btn" onclick="toggleMed(this)" title="Mark as taken">
+      <i class="fa-solid fa-check"></i>
+    </div>`;
+
+  document.querySelector('.med-list').appendChild(card);
+  showSuccess(`${name} added to your medication schedule.`);
+
+  // Reset form
+  document.getElementById('medName').value = '';
+  document.getElementById('medPurpose').value = '';
+  document.getElementById('medTime').value = '';
+}
+</script>
+{% endblock %}

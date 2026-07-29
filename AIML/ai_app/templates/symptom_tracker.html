@@ -1,0 +1,265 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Symptom Tracker — UteroCare{% endblock %}
+
+{% block extra_style %}
+/* ── SYMPTOM TRACKER ── */
+.tracker-layout{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
+@media(max-width:1100px){.tracker-layout{grid-template-columns:1fr;}}
+
+/* Timeline */
+.timeline-card{padding:24px;}
+.timeline-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1.05rem;font-weight:800;color:#102348;margin-bottom:4px;}
+.timeline-subtitle{font-size:.8rem;color:#94a3b8;margin-bottom:24px;}
+.timeline{position:relative;padding-left:28px;}
+.timeline::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,#2563eb,rgba(37,99,235,.08));}
+.timeline-entry{position:relative;padding-bottom:26px;}
+.timeline-entry:last-child{padding-bottom:0;}
+.timeline-dot{position:absolute;left:-28px;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(37,99,235,.18);}
+.timeline-dot.high{border-color:#dc2626;}
+.timeline-dot.medium{border-color:#f59e0b;}
+.timeline-dot.low{border-color:#10b981;}
+.timeline-entry-card{padding:14px 16px;border-radius:14px;background:rgba(248,250,255,.7);border:1px solid rgba(200,218,248,.35);}
+.timeline-entry-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.timeline-date{font-size:.8rem;font-weight:700;color:#17305c;}
+.timeline-pain-badge{font-size:.66rem;font-weight:800;padding:3px 10px;border-radius:20px;}
+.timeline-pain-badge.high{background:rgba(220,38,38,.10);color:#dc2626;}
+.timeline-pain-badge.medium{background:rgba(245,158,11,.10);color:#d97706;}
+.timeline-pain-badge.low{background:rgba(16,185,129,.10);color:#059669;}
+.timeline-symptoms{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.timeline-symptom-tag{font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:20px;background:rgba(37,99,235,.06);color:#2563eb;border:1px solid rgba(37,99,235,.12);}
+.timeline-note{font-size:.78rem;color:#64748b;margin-top:8px;line-height:1.6;}
+
+/* Log entry form */
+.log-card{padding:24px;}
+.log-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1.05rem;font-weight:800;color:#102348;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.log-pain-display{text-align:center;margin-bottom:18px;}
+.log-pain-display .emoji{font-size:3rem;margin-bottom:8px;display:block;}
+.log-pain-display .val{font-family:'Bricolage Grotesque',sans-serif;font-size:1.4rem;font-weight:800;color:#17305c;}
+.log-symptom-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;max-height:180px;overflow-y:auto;padding-right:4px;}
+.log-symptom-chip{padding:9px 14px;border-radius:12px;background:rgba(255,255,255,.8);border:1px solid rgba(96,165,250,.14);color:#26446f;font-size:.78rem;font-weight:600;cursor:pointer;transition:.2s ease;}
+.log-symptom-chip:hover{transform:translateY(-2px);}
+.log-symptom-chip.active{background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;border:none;box-shadow:0 10px 22px rgba(37,99,235,.2);}
+.log-textarea{width:100%;height:84px;border:none;border-radius:14px;padding:12px 16px;background:rgba(255,255,255,.85);border:1px solid rgba(96,165,250,.14);font-size:.84rem;color:#17305c;font-family:'Plus Jakarta Sans',sans-serif;resize:vertical;box-shadow:0 6px 16px rgba(37,99,235,.04);margin-bottom:16px;}
+.log-textarea:focus{outline:none;border-color:rgba(37,99,235,.35);box-shadow:0 0 0 4px rgba(96,165,250,.12);}
+
+/* Stat strip */
+.tracker-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.tracker-stat{padding:18px;text-align:center;}
+.tracker-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:1.6rem;font-weight:800;color:#17305c;margin-bottom:4px;}
+.tracker-stat-lbl{font-size:.72rem;color:#94a3b8;font-weight:600;}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+    <div class="page-header-left">
+      <h1>Symptom Tracker</h1>
+      <p>Daily logs and pain intensity history for {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<!-- STAT STRIP -->
+<div class="tracker-stats">
+  <div class="card tracker-stat stagger-1">
+    <div class="tracker-stat-val">12</div>
+    <div class="tracker-stat-lbl">Entries This Month</div>
+  </div>
+  <div class="card tracker-stat stagger-2">
+    <div class="tracker-stat-val">4.2 / 10</div>
+    <div class="tracker-stat-lbl">Average Pain Level</div>
+  </div>
+  <div class="card tracker-stat stagger-3">
+    <div class="tracker-stat-val">Pelvic Pain</div>
+    <div class="tracker-stat-lbl">Most Frequent Symptom</div>
+  </div>
+</div>
+
+<div class="tracker-layout">
+
+  <!-- LEFT: Timeline -->
+  <div class="card timeline-card stagger-2">
+    <div class="timeline-title">Symptom History Timeline</div>
+    <div class="timeline-subtitle">Your most recent entries, newest first</div>
+    <div class="timeline" id="symptomTimeline">
+
+      <div class="timeline-entry">
+        <div class="timeline-dot medium"><i class="fa-solid fa-circle" style="font-size:.3rem;color:#f59e0b;"></i></div>
+        <div class="timeline-entry-card">
+          <div class="timeline-entry-top">
+            <div class="timeline-date">Jun 12, 2026 · 8:30 PM</div>
+            <span class="timeline-pain-badge medium">Pain 5/10</span>
+          </div>
+          <div class="timeline-symptoms">
+            <span class="timeline-symptom-tag">Pelvic Pain</span>
+            <span class="timeline-symptom-tag">Bloating</span>
+            <span class="timeline-symptom-tag">Fatigue</span>
+          </div>
+          <div class="timeline-note">Mild discomfort throughout the afternoon, eased after rest.</div>
+        </div>
+      </div>
+
+      <div class="timeline-entry">
+        <div class="timeline-dot high"><i class="fa-solid fa-circle" style="font-size:.3rem;color:#dc2626;"></i></div>
+        <div class="timeline-entry-card">
+          <div class="timeline-entry-top">
+            <div class="timeline-date">Jun 10, 2026 · 7:15 AM</div>
+            <span class="timeline-pain-badge high">Pain 8/10</span>
+          </div>
+          <div class="timeline-symptoms">
+            <span class="timeline-symptom-tag">Heavy Bleeding</span>
+            <span class="timeline-symptom-tag">Chronic Cramping</span>
+            <span class="timeline-symptom-tag">Lower Back Pain</span>
+          </div>
+          <div class="timeline-note">Severe cramping in the morning, took pain relief medication.</div>
+        </div>
+      </div>
+
+      <div class="timeline-entry">
+        <div class="timeline-dot low"><i class="fa-solid fa-circle" style="font-size:.3rem;color:#10b981;"></i></div>
+        <div class="timeline-entry-card">
+          <div class="timeline-entry-top">
+            <div class="timeline-date">Jun 7, 2026 · 9:00 PM</div>
+            <span class="timeline-pain-badge low">Pain 2/10</span>
+          </div>
+          <div class="timeline-symptoms">
+            <span class="timeline-symptom-tag">Fatigue</span>
+          </div>
+          <div class="timeline-note">Generally felt fine, slight tiredness in the evening.</div>
+        </div>
+      </div>
+
+      <div class="timeline-entry">
+        <div class="timeline-dot medium"><i class="fa-solid fa-circle" style="font-size:.3rem;color:#f59e0b;"></i></div>
+        <div class="timeline-entry-card">
+          <div class="timeline-entry-top">
+            <div class="timeline-date">Jun 4, 2026 · 6:45 AM</div>
+            <span class="timeline-pain-badge medium">Pain 6/10</span>
+          </div>
+          <div class="timeline-symptoms">
+            <span class="timeline-symptom-tag">Painful Periods</span>
+            <span class="timeline-symptom-tag">Nausea</span>
+          </div>
+          <div class="timeline-note">First day of cycle, took the day off to rest.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: Log new entry -->
+  <div class="card log-card stagger-3">
+    <div class="log-title"><i class="fa-solid fa-plus-circle" style="color:#2563eb;"></i> Log Today's Symptoms</div>
+
+    <div class="log-pain-display">
+      <span class="emoji" id="trackerEmoji">🙂</span>
+      <input type="range" min="1" max="10" value="5" id="trackerPainSlider" class="pain-slider" style="width:100%;">
+      <div class="val" id="trackerPainVal" style="margin-top:10px;">5 / 10</div>
+    </div>
+
+    <label style="font-size:.82rem;font-weight:700;color:#28446f;display:block;margin-bottom:10px;">Select Symptoms</label>
+    <div class="log-symptom-grid">
+      <div class="log-symptom-chip" data-symptom="Pelvic Pain">Pelvic Pain</div>
+      <div class="log-symptom-chip" data-symptom="Heavy Bleeding">Heavy Bleeding</div>
+      <div class="log-symptom-chip" data-symptom="Fatigue">Fatigue</div>
+      <div class="log-symptom-chip" data-symptom="Bloating">Bloating</div>
+      <div class="log-symptom-chip" data-symptom="Chronic Cramping">Chronic Cramping</div>
+      <div class="log-symptom-chip" data-symptom="Lower Back Pain">Lower Back Pain</div>
+      <div class="log-symptom-chip" data-symptom="Nausea">Nausea</div>
+      <div class="log-symptom-chip" data-symptom="Painful Periods">Painful Periods</div>
+      <div class="log-symptom-chip" data-symptom="Irregular Cycle">Irregular Cycle</div>
+    </div>
+
+    <label style="font-size:.82rem;font-weight:700;color:#28446f;display:block;margin-bottom:10px;">Notes</label>
+    <textarea class="log-textarea" id="trackerNotes" placeholder="Describe how you're feeling today…"></textarea>
+
+    <button class="btn-premium" style="width:100%;" onclick="logSymptomEntry()">
+      <i class="fa-solid fa-floppy-disk"></i> Save Entry
+    </button>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ── Pain slider with emoji ────────────────────
+(function () {
+  const slider = document.getElementById('trackerPainSlider');
+  const emoji  = document.getElementById('trackerEmoji');
+  const val    = document.getElementById('trackerPainVal');
+  function update() {
+    const v = parseInt(slider.value);
+    let emo = '🙂';
+    if (v <= 3) emo = '😊';
+    else if (v <= 6) emo = '😟';
+    else if (v <= 8) emo = '😣';
+    else emo = '😫';
+    emoji.textContent = emo;
+    val.textContent = v + ' / 10';
+  }
+  slider.addEventListener('input', update);
+  update();
+})();
+
+// ── Symptom chip selection ────────────────────
+let trackerSymptoms = [];
+document.querySelectorAll('.log-symptom-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('active');
+    const s = chip.dataset.symptom;
+    if (chip.classList.contains('active')) {
+      trackerSymptoms.push(s);
+    } else {
+      trackerSymptoms = trackerSymptoms.filter(x => x !== s);
+    }
+  });
+});
+
+// ── Log new entry ──────────────────────────────
+function logSymptomEntry() {
+  const pain = document.getElementById('trackerPainSlider').value;
+  const notes = document.getElementById('trackerNotes').value;
+
+  if (trackerSymptoms.length === 0 && !notes) {
+    showError('Please select at least one symptom or add a note.');
+    return;
+  }
+
+  const painLevel = pain <= 3 ? 'low' : pain <= 6 ? 'medium' : 'high';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) +
+                  ' · ' + now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+
+  const entry = document.createElement('div');
+  entry.className = 'timeline-entry';
+  entry.style.animation = 'fadeUp .4s ease';
+  entry.innerHTML = `
+    <div class="timeline-dot ${painLevel}"><i class="fa-solid fa-circle" style="font-size:.3rem;color:${painLevel === 'high' ? '#dc2626' : painLevel === 'medium' ? '#f59e0b' : '#10b981'};"></i></div>
+    <div class="timeline-entry-card">
+      <div class="timeline-entry-top">
+        <div class="timeline-date">${dateStr}</div>
+        <span class="timeline-pain-badge ${painLevel}">Pain ${pain}/10</span>
+      </div>
+      <div class="timeline-symptoms">
+        ${trackerSymptoms.map(s => `<span class="timeline-symptom-tag">${s}</span>`).join('') || '<span class="timeline-symptom-tag">No symptoms selected</span>'}
+      </div>
+      ${notes ? `<div class="timeline-note">${notes}</div>` : ''}
+    </div>`;
+
+  document.getElementById('symptomTimeline').prepend(entry);
+  showSuccess('Symptom entry saved successfully.');
+
+  // Reset form
+  document.querySelectorAll('.log-symptom-chip.active').forEach(c => c.classList.remove('active'));
+  trackerSymptoms = [];
+  document.getElementById('trackerNotes').value = '';
+  document.getElementById('trackerPainSlider').value = 5;
+  document.getElementById('trackerPainSlider').dispatchEvent(new Event('input'));
+}
+</script>
+{% endblock %}

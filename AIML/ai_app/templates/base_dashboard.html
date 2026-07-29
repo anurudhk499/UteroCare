@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}UteroCare — AI Healthcare Portal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --white: #ffffff;
+      --border: #e4e9f2;
+      --border-dark: #d0d8e8;
+      --text: #0f1c35;
+      --text-2: #4a5878;
+      --text-3: #8a96b0;
+      --blue: #1a56db;
+      --blue-light: #e8f0fe;
+      --blue-mid: #3b82f6;
+      --blue-soft: #dbeafe;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --sidebar-w: 224px;
+      --nav-h: 60px;
+      --shadow-sm: 0 1px 3px rgba(15,28,53,0.07),0 1px 2px rgba(15,28,53,0.04);
+      --shadow-md: 0 4px 16px rgba(15,28,53,0.08),0 1px 4px rgba(15,28,53,0.05);
+      --shadow-lg: 0 8px 32px rgba(15,28,53,0.1),0 2px 8px rgba(15,28,53,0.06);
+      --radius: 14px; --radius-sm: 9px; --radius-lg: 20px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+    /* ── TOPNAV ── */
+    .topnav{position:fixed;top:0;left:var(--sidebar-w);right:0;z-index:100;height:var(--nav-h);background:rgba(255,255,255,0.72);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);border-bottom:1px solid rgba(255,255,255,0.75);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 4px 12px rgba(29,78,216,.07),0 8px 28px rgba(29,78,216,.09);display:flex;align-items:center;gap:16px;padding:0 28px;}
+    .search-box{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.78);border:1.5px solid rgba(200,218,248,.85);border-radius:20px;padding:0 14px;height:38px;min-width:260px;box-shadow:0 2px 8px rgba(29,78,216,.05);transition:all .22s;}
+    .search-box:focus-within{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.11),0 4px 14px rgba(29,78,216,.1);}
+    .search-box input{border:none;outline:none;background:transparent;font-size:12.5px;color:#1a2a4a;width:100%;}
+    .search-box input::placeholder{color:#b0bdd8;font-weight:300;}
+    .nav-spacer{flex:1;}
+    .nav-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.72);border:1.5px solid rgba(200,218,248,.8);cursor:pointer;position:relative;color:#4a5a7a;transition:all .18s;box-shadow:0 1px 0 rgba(255,255,255,.92) inset,0 4px 10px rgba(29,78,216,.07);}
+    .nav-icon:hover{background:#fff;border-color:rgba(59,130,246,.45);color:#2563eb;transform:translateY(-2px);}
+    .nav-icon .dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1px solid #fff;box-shadow:0 0 5px rgba(220,38,38,.5);}
+    .nav-profile{display:flex;align-items:center;gap:10px;padding:5px 13px 5px 6px;background:rgba(255,255,255,.72);border:1.5px solid rgba(200,218,248,.8);border-radius:12px;cursor:pointer;transition:all .2s;}
+    .nav-profile:hover{background:#fff;border-color:rgba(59,130,246,.4);transform:translateY(-2px);}
+    .nav-avatar{width:30px;height:30px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(200,218,248,.7);background:linear-gradient(135deg,#2563eb,#60a5fa);display:flex;align-items:center;justify-content:center;color:white;font-size:.78rem;font-weight:700;}
+    .nav-avatar img{width:100%;height:100%;object-fit:cover;}
+    .nav-profile-text strong{display:block;font-size:12.5px;font-weight:600;color:#1a2a4a;}
+    .nav-profile-text span{font-size:10.5px;color:#9daec8;font-weight:400;}
+
+    /* ── SIDEBAR ── */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);z-index:200;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;box-shadow:var(--shadow-sm);}
+    .sidebar-brand{display:flex;align-items:center;gap:5px;padding:6px 6px 6px;margin-bottom:-10px;}
+    .sidebar-brand img{width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(37,99,235,.10));}
+    .sidebar-brand-text{display:flex;flex-direction:column;}
+    .utero{background:linear-gradient(135deg,#1a2e5b,#879fde);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .care{background:linear-gradient(135deg,#3b82f6,#93c5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .sidebar-brand-text p{margin-top:3px;text-align:center;font-size:.60rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+    .nav-section-label{font-size:.6rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);padding:12px 10px 5px;margin-top:4px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;font-size:.84rem;font-weight:500;color:var(--text-2);text-decoration:none;}
+    .nav-item:hover{background:var(--bg);color:var(--text);}
+    .nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:600;}
+    .nav-item svg{flex-shrink:0;opacity:.8;}
+    .nav-item.active svg{opacity:1;}
+    .nav-badge{margin-left:auto;background:var(--blue);color:white;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border);}
+    .nav-logout{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.84rem;font-weight:500;color:var(--red);transition:background .15s;text-decoration:none;}
+    .nav-logout:hover{background:var(--red-light);}
+
+    /* ── MAIN ── */
+    .main{margin-left:var(--sidebar-w);padding-top:var(--nav-h);min-height:100vh;}
+    .page{width:100%;padding:28px;margin:0 auto;}
+
+    /* ── CARD ── */
+    .card{position:relative;overflow:hidden;background:rgba(255,255,255,.52);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border:1px solid rgba(255,255,255,.82);border-radius:24px;box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 8px 22px rgba(29,78,216,.07),0 20px 48px rgba(15,23,42,.06);transition:transform .28s ease,box-shadow .28s ease;}
+    .card:hover{transform:translateY(-4px);box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 14px 34px rgba(29,78,216,.12),0 30px 70px rgba(15,23,42,.08);}
+
+    /* ── PAGE HEADER (used on all sub-pages) ── */
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;animation:fadeUp .5s ease both;}
+    .page-header-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:1.7rem;font-weight:800;color:#102348;letter-spacing:-1px;margin-bottom:6px;}
+    .page-header-left p{font-size:.86rem;color:#5f6f8f;}
+    .page-header-icon{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#60a5fa);display:flex;align-items:center;justify-content:center;color:white;font-size:1.3rem;box-shadow:0 12px 28px rgba(37,99,235,.25);}
+    .page-header-content{display:flex;align-items:center;gap:16px;}
+
+    /* ── BUTTONS (shared) ── */
+    .btn-sm{padding:7px 14px;border-radius:8px;font-size:.78rem;font-weight:600;border:1px solid var(--border);background:var(--white);color:var(--text-2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+    .btn-sm:hover{background:var(--bg);border-color:var(--border-dark);color:var(--text);}
+    .btn-sm.primary{background:var(--blue-light);border-color:#c7d7fc;color:var(--blue);}
+    .btn-sm.primary:hover{background:#c7d7fc;}
+
+    .btn-premium{
+      position:relative;border:none;border-radius:14px;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;overflow:hidden;outline:none;
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:.02em;color:#fff;
+      padding:12px 24px;
+      background:linear-gradient(160deg,#5ea8ff 0%,#3b82f6 45%,#2563eb 100%);
+      box-shadow:0 1px 0 0 rgba(255,255,255,0.45) inset,1px 0 0 0 rgba(255,255,255,0.15) inset,0 4px 0 0 #1748b5,0 8px 18px rgba(37,99,235,0.35),0 16px 32px rgba(37,99,235,0.18);
+      transition:transform .16s ease,box-shadow .16s ease,filter .2s ease;
+    }
+    .btn-premium::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.10) 45%,transparent 100%);pointer-events:none;}
+    .btn-premium::after{content:'';position:absolute;top:0;left:-75%;width:50%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.28) 50%,transparent 100%);pointer-events:none;transition:left .65s ease;}
+    .btn-premium:hover::after{left:130%;}
+    .btn-premium:hover{transform:translateY(-3px);filter:brightness(1.04);box-shadow:0 1px 0 0 rgba(255,255,255,0.45) inset,1px 0 0 0 rgba(255,255,255,0.15) inset,0 6px 0 0 #1748b5,0 14px 28px rgba(37,99,235,0.42),0 28px 60px rgba(37,99,235,0.22);}
+    .btn-premium:active{transform:translateY(2px);}
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes hbpulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .stagger-1{animation:fadeUp .5s .04s ease both;}
+    .stagger-2{animation:fadeUp .5s .08s ease both;}
+    .stagger-3{animation:fadeUp .5s .12s ease both;}
+    .stagger-4{animation:fadeUp .5s .16s ease both;}
+    .stagger-5{animation:fadeUp .5s .20s ease both;}
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:99px;}
+
+    /* ── TOAST (shared) ── */
+    .error-toast{position:fixed;bottom:28px;right:28px;background:#1e293b;color:#fff;padding:14px 20px;border-radius:14px;font-size:.84rem;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:9999;display:none;align-items:center;gap:10px;max-width:340px;}
+    .error-toast.show{display:flex;animation:fadeUp .3s ease;}
+    .success-toast{position:fixed;bottom:28px;right:28px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;padding:14px 20px;border-radius:14px;font-size:.84rem;font-weight:500;box-shadow:0 8px 28px rgba(5,150,105,.3);z-index:9999;display:none;align-items:center;gap:10px;max-width:360px;}
+    .success-toast.show{display:flex;animation:fadeUp .3s ease;}
+
+    @media(max-width:1100px){
+      .page-header{flex-direction:column;align-items:flex-start;gap:14px;}
+    }
+
+    {% block extra_style %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <img src="{% static 'images/logo.png' %}" alt="UteroCare Logo">
+    <div class="sidebar-brand-text">
+      <h2><span class="utero">Utero</span><span class="care">Care</span></h2>
+      <p>AI Healthcare</p>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main Menu</div>
+    <a href="{% url 'dashboard' %}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="{% url 'predictions' %}" class="nav-item {% if active_page == 'predictions' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Predictions <span class="nav-badge">{{ total_predictions|default:"0" }}</span>
+    </a>
+    <a href="{% url 'reports' %}" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Reports
+    </a>
+    <a href="{% url 'appointments' %}" class="nav-item {% if active_page == 'appointments' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Appointments
+    </a>
+    <a href="{% url 'analytics' %}" class="nav-item {% if active_page == 'analytics' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </a>
+    <div class="nav-section-label">Health Tools</div>
+    <a href="{% url 'symptom_tracker' %}" class="nav-item {% if active_page == 'symptom_tracker' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Symptom Tracker
+    </a>
+    <a href="{% url 'medications' %}" class="nav-item {% if active_page == 'medications' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Medications
+    </a>
+    <a href="{% url 'my_files' %}" class="nav-item {% if active_page == 'my_files' %}active{% endif %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      My Files
+    </a>
+    <div class="nav-section-label">Account</div>
+   
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      Settings
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="{% url 'login' %}" class="nav-logout">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════
+     TOPNAV — Dynamic user (Task 7)
+═══════════════════════════════════ -->
+<header class="topnav">
+  <div class="search-box">
+    <svg width="14" height="14" fill="none" stroke="#8a96b0" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search medical records, reports…"/>
+  </div>
+  <div class="nav-spacer"></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="nav-icon" title="Notifications">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <div class="dot"></div>
+    </div>
+    <div class="nav-icon" title="Help">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round" stroke-width="2.5"/></svg>
+    </div>
+   
+      <div class="nav-avatar">
+        {% if request.user.first_name %}{{ request.user.first_name|slice:":1" }}{% if request.user.last_name %}{{ request.user.last_name|slice:":1" }}{% endif %}{% else %}{{ request.user.username|slice:":2"|upper }}{% endif %}
+      </div>
+      <div class="nav-profile-text">
+        <strong>{% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.username }}{% endif %}</strong>
+        <span>Patient ID: #{{ request.user.id }}</span>
+      </div>
+    </a>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════ -->
+<main class="main">
+  <div class="page">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- ERROR TOAST -->
+<div class="error-toast" id="errorToast">
+  <i class="fa-solid fa-circle-exclamation" style="color:#f87171;flex-shrink:0;"></i>
+  <span id="errorMsg">Something went wrong. Please try again.</span>
+</div>
+
+<!-- SUCCESS TOAST -->
+<div class="success-toast" id="successToast">
+  <i class="fa-solid fa-circle-check" style="flex-shrink:0;"></i>
+  <span id="successMsg">Done.</span>
+</div>
+
+<script>
+// ── CSRF helper ───────────────────────────────
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+// ── Toasts ────────────────────────────────────
+function showError(msg) {
+  const t = document.getElementById('errorToast');
+  document.getElementById('errorMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4500);
+}
+function showSuccess(msg) {
+  const t = document.getElementById('successToast');
+  document.getElementById('successMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// TASK 7 — current user info available to all child templates
+const CURRENT_USER = {
+  id:       "{{ request.user.id }}",
+  username: "{{ request.user.username }}",
+  fullName: "{% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.username }}{% endif %}",
+  email:    "{{ request.user.email|default:'' }}"
+};
+</script>
+
+{% block extra_script %}{% endblock %}
+</body>
+</html>

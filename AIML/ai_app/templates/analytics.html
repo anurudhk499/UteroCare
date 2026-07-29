@@ -1,0 +1,417 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Analytics — UteroCare{% endblock %}
+
+{% block extra_style %}
+/* ── ANALYTICS PAGE ── */
+.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px;}
+@media(max-width:1100px){.analytics-grid{grid-template-columns:repeat(2,1fr);}}
+
+.analytics-stat{padding:20px;border-radius:20px;position:relative;overflow:hidden;}
+.analytics-stat-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#2563eb;background:rgba(255,255,255,.7);border:1px solid rgba(200,218,248,.8);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 3px 8px rgba(29,78,216,.1);margin-bottom:14px;}
+.analytics-stat-value{font-family:'Bricolage Grotesque',sans-serif;font-size:1.8rem;font-weight:800;color:#0f172a;letter-spacing:-1px;margin-bottom:4px;}
+.analytics-stat-label{font-size:.75rem;color:#64748b;font-weight:500;}
+.analytics-stat-trend{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:8px;}
+.trend-up{background:rgba(220,38,38,.08);color:#dc2626;}
+.trend-down{background:rgba(5,150,105,.08);color:#059669;}
+.trend-flat{background:rgba(100,116,139,.08);color:#64748b;}
+
+.analytics-charts{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:18px;}
+@media(max-width:1100px){.analytics-charts{grid-template-columns:1fr;}}
+
+.chart-card{padding:24px;}
+.chart-title{font-family:'Bricolage Grotesque',sans-serif;font-size:1rem;font-weight:800;color:#102348;margin-bottom:4px;}
+.chart-subtitle{font-size:.78rem;color:#94a3b8;margin-bottom:20px;}
+
+/* Risk progression line chart (SVG) */
+.line-chart-wrap{position:relative;height:240px;}
+.line-chart-wrap svg{width:100%;height:100%;}
+.chart-legend{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap;}
+.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;color:#64748b;}
+.chart-legend-dot{width:9px;height:9px;border-radius:50%;}
+.chart-empty-msg{display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:.85rem;text-align:center;flex-direction:column;gap:10px;}
+.chart-empty-msg i{font-size:1.8rem;color:#cbd5e1;}
+
+/* Disease distribution donut */
+.donut-chart-wrap{display:flex;align-items:center;justify-content:center;gap:24px;}
+.donut-chart-wrap svg{width:160px;height:160px;flex-shrink:0;}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:10px;}
+.donut-legend-item{display:flex;align-items:center;gap:10px;}
+.donut-legend-dot{width:11px;height:11px;border-radius:4px;flex-shrink:0;}
+.donut-legend-label{font-size:.8rem;font-weight:600;color:#35507b;flex:1;}
+.donut-legend-value{font-size:.8rem;font-weight:800;color:#17305c;}
+
+/* Activity bar chart */
+.bar-chart-wrap{display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:20px;}
+.bar-chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.bar-chart-bar{width:100%;border-radius:8px 8px 0 0;background:linear-gradient(180deg,#3b82f6,rgba(59,130,246,.35));transition:height 1s cubic-bezier(.22,.68,0,1.2);min-height:4px;}
+.bar-chart-label{font-size:.66rem;font-weight:700;color:#94a3b8;}
+
+.health-score-card{padding:24px;display:flex;align-items:center;gap:28px;}
+.health-score-ring{position:relative;width:130px;height:130px;flex-shrink:0;}
+.health-score-ring svg{width:100%;height:100%;}
+.health-score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.health-score-center .num{font-family:'Bricolage Grotesque',sans-serif;font-size:1.8rem;font-weight:800;color:#17305c;}
+.health-score-center .lbl{font-size:.6rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.health-score-details h3{font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;font-weight:800;color:#102348;margin-bottom:8px;}
+.health-score-details p{font-size:.84rem;color:#64748b;line-height:1.7;}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fa-solid fa-chart-line"></i></div>
+    <div class="page-header-left">
+      <h1>Health Analytics</h1>
+      <p>AI activity trends and health insights for {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOP STAT CARDS -->
+<div class="analytics-grid">
+  <div class="card analytics-stat stagger-1">
+    <div class="sc-glow" style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(191,219,254,.55) 0%,transparent 70%);"></div>
+    <div class="analytics-stat-icon"><i class="fa-solid fa-heart-pulse" style="font-size:.9rem;"></i></div>
+    <div class="analytics-stat-value" id="an-healthScore">{{ health_score|default:"--" }}{% if health_score %}/100{% endif %}</div>
+    <div class="analytics-stat-label">Overall Health Score</div>
+    <span class="analytics-stat-trend trend-flat" id="an-healthTrend"><i class="fa-solid fa-circle-info" style="font-size:.6rem;"></i> Based on latest analyses</span>
+  </div>
+  <div class="card analytics-stat stagger-2">
+    <div class="sc-glow" style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(191,219,254,.55) 0%,transparent 70%);"></div>
+    <div class="analytics-stat-icon"><i class="fa-solid fa-wave-square" style="font-size:.9rem;"></i></div>
+    <div class="analytics-stat-value" id="an-totalAnalyses">{{ total_predictions|default:"0" }}</div>
+    <div class="analytics-stat-label">Total AI Analyses</div>
+    <span class="analytics-stat-trend trend-flat"><i class="fa-solid fa-circle-info" style="font-size:.6rem;"></i> All-time count</span>
+  </div>
+  <div class="card analytics-stat stagger-3">
+    <div class="sc-glow" style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(191,219,254,.55) 0%,transparent 70%);"></div>
+    <div class="analytics-stat-icon"><i class="fa-solid fa-gauge-high" style="font-size:.9rem;"></i></div>
+    <div class="analytics-stat-value" id="an-latestRisk">{{ latest_risk|default:"--" }}%</div>
+    <div class="analytics-stat-label">Latest Fusion Risk</div>
+    <span class="analytics-stat-trend trend-flat" id="an-riskTrend"><i class="fa-solid fa-circle-info" style="font-size:.6rem;"></i> Compared to previous scan</span>
+  </div>
+  <div class="card analytics-stat stagger-4">
+    <div class="sc-glow" style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(191,219,254,.55) 0%,transparent 70%);"></div>
+    <div class="analytics-stat-icon"><i class="fa-solid fa-calendar-check" style="font-size:.9rem;"></i></div>
+    <div class="analytics-stat-value">{{ upcoming_appointments|default:"0" }}</div>
+    <div class="analytics-stat-label">Upcoming Appointments</div>
+    <span class="analytics-stat-trend trend-flat">
+      <i class="fa-solid fa-clock" style="font-size:.6rem;"></i>
+      {% if next_appointment_date %}Next: {{ next_appointment_date|date:"M j" }}{% else %}None scheduled{% endif %}
+    </span>
+  </div>
+</div>
+
+<!-- RISK PROGRESSION + DISEASE DISTRIBUTION -->
+<div class="analytics-charts">
+
+  <!-- Risk progression line chart -->
+  <div class="card chart-card stagger-2">
+    <div class="chart-title">Risk Progression Over Time</div>
+    <div class="chart-subtitle">Fusion risk score trend across your last analyses</div>
+    <div class="line-chart-wrap" id="riskLineChartWrap">
+      <!-- populated dynamically by JS -->
+    </div>
+    <div class="chart-legend">
+      <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2563eb;"></span> Fusion Risk Score (%)</div>
+      <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#dc2626;"></span> Latest Analysis</div>
+    </div>
+  </div>
+
+  <!-- Disease distribution donut -->
+  <div class="card chart-card stagger-3">
+    <div class="chart-title">Disease Distribution</div>
+    <div class="chart-subtitle">Breakdown of detected conditions</div>
+    <div class="donut-chart-wrap" id="diseaseDonutWrap">
+      <!-- populated dynamically by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY ACTIVITY + HEALTH SCORE -->
+<div class="analytics-charts" style="grid-template-columns:1fr 1.4fr;">
+
+  <!-- Health score breakdown -->
+  <div class="card health-score-card stagger-4">
+    <div class="health-score-ring">
+      <svg viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="48" fill="none" stroke="#e4e9f2" stroke-width="9"/>
+        <circle id="healthScoreRing" cx="55" cy="55" r="48" fill="none" stroke="#10b981" stroke-width="9"
+                stroke-dasharray="301.6" stroke-dashoffset="301.6"
+                stroke-linecap="round" transform="rotate(-90 55 55)"
+                style="transition:stroke-dashoffset 1s cubic-bezier(.22,.68,0,1.2),stroke .4s ease;"/>
+      </svg>
+      <div class="health-score-center">
+        <div class="num" id="healthScoreNum">{{ health_score|default:"--" }}</div>
+        <div class="lbl">Health Score</div>
+      </div>
+    </div>
+    <div class="health-score-details">
+      <h3 id="healthScoreTitle">{% if health_score %}Looking Good{% else %}No Data Yet{% endif %}</h3>
+      <p id="healthScoreDesc">
+        {% if health_score %}
+        Based on your recent AI analyses, symptom reports, and clinical risk scores, your overall uterine health score reflects your current monitoring data. Continue regular monitoring and follow-up appointments as recommended.
+        {% else %}
+        Run your first AI analysis from the dashboard to generate a personalized health score based on your MRI fusion results and symptom history.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Monthly activity bar chart -->
+  <div class="card chart-card stagger-5">
+    <div class="chart-title">Monthly AI Analysis Activity</div>
+    <div class="chart-subtitle">Number of analyses performed per month</div>
+    <div class="bar-chart-wrap" id="monthlyBarChart">
+      <!-- populated dynamically by JS -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ─────────────────────────────────────────────
+// Real prediction data passed from Django.
+// Each entry: { disease, fusion_risk_score, analyzed_at (ISO date) }
+// ─────────────────────────────────────────────
+const ANALYTICS_PREDICTIONS = [
+  {% for p in predictions %}
+  {
+    disease: "{{ p.disease }}",
+    fusion_risk_score: {{ p.fusion_risk_score|default:0 }},
+    analyzed_at: "{{ p.analyzed_at|date:'c' }}"
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+];
+
+const DISEASE_COLORS = {
+  'Normal Uterus': '#10b981',
+  'Fibroid': '#f59e0b',
+  'Adenomyosis': '#f97316',
+  'Endometrial Cancer': '#ef4444',
+};
+
+// ── Risk progression line chart ───────────────
+function renderRiskLineChart() {
+  const wrap = document.getElementById('riskLineChartWrap');
+
+  if (ANALYTICS_PREDICTIONS.length === 0) {
+    wrap.innerHTML = `
+      <div class="chart-empty-msg">
+        <i class="fa-solid fa-chart-line"></i>
+        <div>No analyses yet.<br>Run an AI analysis to see your risk progression.</div>
+      </div>`;
+    return;
+  }
+
+  // Use the most recent up to 8 analyses, in chronological order (oldest first)
+  const data = ANALYTICS_PREDICTIONS.slice(0, 8).slice().reverse();
+
+  const w = 600, h = 220, padTop = 20, padBottom = 20;
+  const usableH = h - padTop - padBottom;
+  const n = data.length;
+  const stepX = n > 1 ? w / (n - 1) : 0;
+
+  const points = data.map((d, i) => {
+    const x = n > 1 ? i * stepX : w / 2;
+    const risk = Math.max(0, Math.min(100, d.fusion_risk_score));
+    const y = padTop + usableH - (risk / 100) * usableH;
+    return { x, y, risk };
+  });
+
+  let linePath = '';
+  let areaPath = '';
+  points.forEach((p, i) => {
+    linePath += (i === 0 ? 'M' : ' L') + p.x + ',' + p.y;
+  });
+  if (n > 1) {
+    areaPath = linePath + ` L${points[n-1].x},${h-padBottom} L${points[0].x},${h-padBottom} Z`;
+  } else {
+    areaPath = `M${points[0].x-1},${points[0].y} L${points[0].x+1},${points[0].y} L${points[0].x+1},${h-padBottom} L${points[0].x-1},${h-padBottom} Z`;
+  }
+
+  let circles = '';
+  points.forEach((p, i) => {
+    const isLast = i === n - 1;
+    circles += `<circle cx="${p.x}" cy="${p.y}" r="5" fill="${isLast ? '#dc2626' : '#2563eb'}"/>`;
+  });
+
+  let gridLines = '';
+  [20, 70, 120, 170].forEach(y => {
+    gridLines += `<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#eef2f7" stroke-width="1"/>`;
+  });
+  gridLines += `<line x1="0" y1="200" x2="${w}" y2="200" stroke="#e2e8f0" stroke-width="1.5"/>`;
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      ${gridLines}
+      <path d="${areaPath}" fill="url(#riskGradient)" opacity="0.25"/>
+      ${n > 1 ? `<path d="${linePath}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${circles}
+      <defs>
+        <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+    </svg>`;
+}
+
+// ── Disease distribution donut ────────────────
+function renderDiseaseDonut() {
+  const wrap = document.getElementById('diseaseDonutWrap');
+
+  if (ANALYTICS_PREDICTIONS.length === 0) {
+    wrap.innerHTML = `
+      <div class="chart-empty-msg" style="height:160px;">
+        <i class="fa-solid fa-chart-pie"></i>
+        <div>No diagnosis data yet.</div>
+      </div>`;
+    return;
+  }
+
+  // Count occurrences of each disease
+  const counts = {};
+  ANALYTICS_PREDICTIONS.forEach(p => {
+    counts[p.disease] = (counts[p.disease] || 0) + 1;
+  });
+
+  const total = ANALYTICS_PREDICTIONS.length;
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  // Build donut segments
+  let circles = `<circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#e8eef8" stroke-width="4"></circle>`;
+  let offset = 25; // start offset so chart begins at top
+  let legendHtml = '';
+
+  entries.forEach(([disease, count]) => {
+    const pct = Math.round((count / total) * 100);
+    const color = DISEASE_COLORS[disease] || '#94a3b8';
+    circles += `<circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="${color}" stroke-width="4"
+                stroke-dasharray="${pct} ${100 - pct}" stroke-dashoffset="${offset}"></circle>`;
+    offset = (offset - pct + 100) % 100;
+
+    legendHtml += `
+      <div class="donut-legend-item">
+        <span class="donut-legend-dot" style="background:${color};"></span>
+        <span class="donut-legend-label">${disease}</span>
+        <span class="donut-legend-value">${pct}%</span>
+      </div>`;
+  });
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 42 42">${circles}</svg>
+    <div class="donut-legend">${legendHtml}</div>`;
+}
+
+// ── Monthly activity bar chart ────────────────
+function renderMonthlyBarChart() {
+  const wrap = document.getElementById('monthlyBarChart');
+
+  // Build last 6 months labels
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleString('en-US', { month: 'short' }), year: d.getFullYear(), month: d.getMonth(), count: 0 });
+  }
+
+  ANALYTICS_PREDICTIONS.forEach(p => {
+    const d = new Date(p.analyzed_at);
+    if (isNaN(d.getTime())) return;
+    months.forEach(m => {
+      if (m.year === d.getFullYear() && m.month === d.getMonth()) m.count += 1;
+    });
+  });
+
+  const maxCount = Math.max(1, ...months.map(m => m.count));
+
+  if (ANALYTICS_PREDICTIONS.length === 0) {
+    wrap.innerHTML = `
+      <div class="chart-empty-msg" style="width:100%;height:140px;">
+        <i class="fa-solid fa-chart-column"></i>
+        <div>No activity recorded yet.</div>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = months.map((m, i) => {
+    const pct = Math.max(4, Math.round((m.count / maxCount) * 100));
+    const isCurrent = i === months.length - 1;
+    const barStyle = isCurrent
+      ? 'background:linear-gradient(180deg,#1d4ed8,rgba(29,78,216,.4));'
+      : '';
+    return `
+      <div class="bar-chart-col">
+        <div class="bar-chart-bar" style="height:0%;${barStyle}" data-target="${pct}%" title="${m.count} analyses"></div>
+        <div class="bar-chart-label">${m.label}</div>
+      </div>`;
+  }).join('');
+
+  // Animate bars after render
+  setTimeout(() => {
+    document.querySelectorAll('#monthlyBarChart .bar-chart-bar').forEach(bar => {
+      const target = bar.getAttribute('data-target');
+      bar.style.height = target;
+    });
+  }, 150);
+}
+
+// ── Health score ring ──────────────────────────
+function renderHealthScoreRing() {
+  const ring = document.getElementById('healthScoreRing');
+  const scoreStr = "{{ health_score|default:'' }}";
+  if (!scoreStr) {
+    ring.style.stroke = '#cbd5e1';
+    ring.style.strokeDashoffset = '301.6';
+    return;
+  }
+  const score = parseFloat(scoreStr);
+  const circumference = 301.6;
+  const offset = circumference - (score / 100) * circumference;
+
+  let color = '#10b981';
+  if (score < 50) color = '#dc2626';
+  else if (score < 75) color = '#d97706';
+
+  ring.style.stroke = color;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 150);
+}
+
+// ── Risk trend label (compare latest vs previous) ──
+function renderRiskTrend() {
+  const el = document.getElementById('an-riskTrend');
+  if (ANALYTICS_PREDICTIONS.length < 2) {
+    el.innerHTML = `<i class="fa-solid fa-circle-info" style="font-size:.6rem;"></i> Not enough data yet`;
+    el.className = 'analytics-stat-trend trend-flat';
+    return;
+  }
+  const latest = ANALYTICS_PREDICTIONS[0].fusion_risk_score;
+  const previous = ANALYTICS_PREDICTIONS[1].fusion_risk_score;
+  const diff = latest - previous;
+
+  if (diff > 0) {
+    el.innerHTML = `<i class="fa-solid fa-arrow-up" style="font-size:.6rem;"></i> Up ${diff}% from last scan`;
+    el.className = 'analytics-stat-trend trend-up';
+  } else if (diff < 0) {
+    el.innerHTML = `<i class="fa-solid fa-arrow-down" style="font-size:.6rem;"></i> Down ${Math.abs(diff)}% from last scan`;
+    el.className = 'analytics-stat-trend trend-down';
+  } else {
+    el.innerHTML = `<i class="fa-solid fa-equals" style="font-size:.6rem;"></i> Unchanged from last scan`;
+    el.className = 'analytics-stat-trend trend-flat';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderRiskLineChart();
+  renderDiseaseDonut();
+  renderMonthlyBarChart();
+  renderHealthScoreRing();
+  renderRiskTrend();
+});
+</script>
+{% endblock %}

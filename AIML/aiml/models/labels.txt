@@ -1,0 +1,4 @@
+0 adenomyosis
+1 endometrial cancer
+2 fibroid
+3 normal  uterus

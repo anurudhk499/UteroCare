@@ -1,0 +1,379 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Nexora</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+       transform: scale(0.85);
+    transform-origin: top center;
+    min-height: 118vh; 
+    font-family:'Sora',sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+    overflow:hidden;
+    overflow-y:auto;
+    position:relative;
+    background:#ffffff;
+}
+
+
+
+/* blobs */
+.blob{ position:fixed; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
+.b1{ width:500px; height:500px; background:rgba(99,179,237,0.25); top:-150px; left:-150px; }
+.b2{ width:400px; height:400px; background:rgba(154,230,180,0.2); bottom:-100px; right:-250px; }
+.b3{ width:250px; height:250px; background:rgba(183,148,244,0.15); top:40%; left:60%; }
+
+/* MEDICAL ILLUSTRATION — between bg (z:0) and card (z:2) */
+.scene-img{
+    position:fixed;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(900px, 100vw);
+    pointer-events:none;
+    z-index:1;
+    -webkit-mask-image:linear-gradient(to top, transparent 0%, black 22%, black 68%, transparent 100%);
+    mask-image:linear-gradient(to top, transparent 0%, black 22%, black 68%, transparent 100%);
+    opacity:;
+    filter:drop-shadow(0 -6px 28px rgba(120,160,240,0.15));
+}
+
+/* container */
+.wrap{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:460px;
+}
+
+/* card */
+.card{
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(32px);
+    -webkit-backdrop-filter:blur(32px);
+    border:1px solid rgba(255,255,255,0.9);
+    border-radius:28px;
+    padding:2.8rem;
+  box-shadow:
+        0 30px 80px rgba(37,99,235,.18),
+        0 15px 40px rgba(96,165,250,.20),
+        0 0 100px rgba(191,219,254,.35),
+        inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+
+/* heading */
+h1{ font-size:24px; color:#1a2a4a; font-weight:600; margin-bottom:4px; }
+h1 span{ color:#1a2a4a; }
+.sub{ font-size:13px; color:#8a9cc0; margin-bottom:2rem; }
+
+/* fields */
+.field{ display:flex; flex-direction:column; gap:6px; margin-bottom:1rem; }
+.field-label{ font-size:12px; color:#5a6f94; font-weight:500; letter-spacing:0.04em; }
+
+/* input */
+.inp-wrap{ position:relative; }
+.inp-wrap i.ico{
+    position:absolute; left:14px; top:50%;
+    transform:translateY(-50%);
+    font-size:16px; color:#b0bdd8;
+    pointer-events:none;
+}
+.inp-wrap input{
+    width:100%;
+    padding:12px 44px 12px 42px;
+    background:#fff;
+    border:1.5px solid #dde6f5;
+    border-radius:14px;
+    font-family:'Sora',sans-serif;
+    font-size:14px; color:#1a2a4a;
+    outline:none;
+    transition:0.22s;
+    box-shadow:
+        0 2px 8px rgba(79,142,247,0.05),
+        inset 0 1px 3px rgba(0,0,0,0.03);
+}
+.inp-wrap input::placeholder{ color:#c2cfe0; }
+.inp-wrap input:focus{
+    border-color:#4f8ef7;
+    box-shadow:
+        0 0 0 4px rgba(79,142,247,0.12),
+        0 2px 8px rgba(79,142,247,0.1);
+}
+
+/* options row */
+.option-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:8px; margin-bottom:1.5rem;
+}
+.remember{ display:flex; align-items:center; gap:8px; }
+.remember input{ accent-color:#4f8ef7; }
+.remember span{ font-size:12px; color:#7d8fb0; }
+.forgot{ font-size:12px; color:#4f8ef7; text-decoration:none; }
+
+/* auto fade message */
+.msg{
+    overflow:hidden;
+    max-height:100px;
+    animation:fadeOut 0.6s ease forwards;
+    animation-delay:3s;
+}
+@keyframes fadeOut{
+    0%{ opacity:1; max-height:100px; }
+    70%{ opacity:0; }
+    100%{ opacity:0; transform:translateY(-10px); max-height:0; padding-top:0; padding-bottom:0; margin-bottom:0; border-width:0; }
+}
+
+/* button */
+.btn{
+    position:relative;
+    width:100%; padding:14px;
+    border:none; border-radius:14px;
+    cursor:pointer;
+    font-family:'Sora',sans-serif;
+    font-size:14px; font-weight:600;
+    color:#fff; letter-spacing:0.04em;
+    overflow:hidden; outline:none;
+    background:linear-gradient(160deg,#5a9eff 0%,#3a7ef6 50%,#2563eb 100%);
+    box-shadow:
+        0  1px 0 0 rgba(255,255,255,0.45) inset,
+        1px 0  0 0 rgba(255,255,255,0.15) inset,
+        0  5px 0 0 #1a4fc4,
+        0  8px 20px rgba(58,126,246,0.45),
+        0 18px 40px rgba(58,126,246,0.22);
+    transition:transform 0.14s ease, box-shadow 0.14s ease;
+}
+.btn::before{
+    content:'';
+    position:absolute; inset:0;
+    border-radius:inherit;
+    background:linear-gradient(180deg,rgba(255,255,255,0.28) 0%,rgba(255,255,255,0.06) 50%,transparent 100%);
+    pointer-events:none;
+}
+.btn::after{
+    content:'';
+    position:absolute;
+    top:0; left:-75%;
+    width:50%; height:100%;
+    background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,0.22) 50%,transparent 100%);
+    pointer-events:none;
+    transition:left 0.5s ease;
+}
+.btn:hover::after{ left:130%; }
+.btn:hover{
+    transform:translateY(-3px);
+    box-shadow:
+        0  1px 0 0 rgba(255,255,255,0.45) inset,
+        1px 0  0 0 rgba(255,255,255,0.15) inset,
+        0  7px 0 0 #1a4fc4,
+        0 12px 28px rgba(58,126,246,0.5),
+        0 24px 50px rgba(58,126,246,0.28);
+}
+.btn:active{
+    transform:translateY(3px);
+    box-shadow:
+        0  1px 0 0 rgba(255,255,255,0.35) inset,
+        0  2px 0 0 #1a4fc4,
+        0  4px 10px rgba(58,126,246,0.3);
+}
+
+/* divider */
+.divider-or{ display:flex; align-items:center; gap:12px; margin:1.5rem 0; }
+.divider-or hr{ flex:1; border:none; border-top:1px solid rgba(200,215,240,0.7); }
+.divider-or span{ font-size:12px; color:#b0bdd8; }
+
+/* oauth */
+
+.oauth-row{
+    display:flex;
+    justify-content:center;
+}
+
+.oauth-btn{
+    width: 150px;   /* Increase or decrease as needed */
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:11px 14px;
+    border-radius:18px;
+    border:1.5px solid #dde6f5;
+    background:#fff;
+    cursor:pointer;
+    font-family:'Sora',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:#4a5a7a;
+    transition:0.2s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+.oauth-btn:hover{
+    border-color:#4f8ef7;
+    box-shadow:0 4px 14px rgba(79,142,247,0.12);
+}
+
+/* footer */
+.signup{ text-align:center; margin-top:1.4rem; font-size:13px; color:#8a9cc0; }
+.signup a{ color:#4f8ef7; font-weight:500; text-decoration:none; }
+
+/* common msg */
+.msg{
+    display:flex; align-items:center; gap:10px;
+    width:100%; padding:14px 16px; margin-bottom:22px;
+    border-radius:16px; font-size:14px; font-weight:600;
+    backdrop-filter:blur(12px);
+    box-shadow:0 4px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.msg-icon{ font-size:18px; flex-shrink:0; }
+.msg.success{
+    background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.06));
+    border:1px solid rgba(34,197,94,0.22); color:#15803d;
+}
+.msg.error{
+    background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.06));
+    border:1px solid rgba(239,68,68,0.22); color:#dc2626;
+}
+
+/* brand */
+.auth-brand{
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    margin-bottom:38px;
+}
+.auth-brand img{
+    width:95px; height:95px; object-fit:contain;
+    margin-bottom:-18px;
+    filter:drop-shadow(0 10px 20px rgba(37,99,235,0.12));
+}
+.utero{
+    background:linear-gradient(135deg,#1a2e5b,#879fde);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.care{
+    background:linear-gradient(135deg,#3b82f6,#93c5fd);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.auth-brand p{
+    margin-top:8px; font-size:.82rem; font-weight:600;
+    letter-spacing:1.8px; text-transform:uppercase; color:#64748b;
+}
+.scene-img{
+    position: absolute;
+    width: 1000px;      /* Increase this */
+    height: auto;
+}
+/* mobile */
+@media(max-width:500px){
+    .card{ padding:2rem 1.5rem; border-radius:22px; }
+    h1{ font-size:21px; }
+    .oauth-row{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- MEDICAL ILLUSTRATION — z-index:1, sits between blobs (0) and card (2) -->
+<img class="scene-img"
+    src="{% static 'images/bg.png' %}"
+    alt="" />
+
+<div class="wrap">
+    <div class="card">
+
+        <div class="auth-brand">
+            <img src="{% static 'images/logo.png' %}" alt="UteroCare Logo">
+            <h1><span class="utero">Utero</span><span class="care">Care</span></h1>
+        </div>
+
+        <h1>Welcome <span>Back</span></h1>
+        <p class="sub">Sign in to continue to your account.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">
+                    {% if message.tags == 'success' %}
+                        <i class="ti ti-circle-check msg-icon"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="ti ti-alert-circle msg-icon"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="field">
+                <label class="field-label">USERNAME OR EMAIL</label>
+                <div class="inp-wrap">
+                    <i class="ti ti-user ico"></i>
+                    <input type="text" name="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label">PASSWORD</label>
+                <div class="inp-wrap">
+                    <i class="ti ti-lock ico"></i>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+
+            <div class="option-row">
+                <label class="remember">
+                    <input type="checkbox">
+                    <span>Remember me</span>
+                </label>
+                <a href="{% url 'password_reset' %}" class="forgot">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="ti ti-login"></i>
+                Sign In
+            </button>
+        </form>
+
+        <div class="divider-or">
+            <hr><span>or continue with</span><hr>
+        </div>
+
+        <div class="oauth-row">
+            
+{% load socialaccount %}
+
+<button type="button"
+        class="oauth-btn"
+        onclick="window.location.href='{% provider_login_url 'google' %}'">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" width="18">
+    Google
+</button>
+
+        </div>
+
+        <p class="signup">
+            Don't have an account?
+            <a href="{% url 'register' %}">Create Account</a>
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

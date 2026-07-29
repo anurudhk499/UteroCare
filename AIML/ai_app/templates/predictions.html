@@ -1,0 +1,178 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Predictions — UteroCare{% endblock %}
+
+{% block extra_style %}
+/* ── PREDICTIONS PAGE ── */
+.pred-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+.pred-search{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.8);border:1px solid rgba(96,165,250,.16);border-radius:16px;padding:0 16px;height:48px;box-shadow:0 8px 20px rgba(37,99,235,.05);}
+.pred-search input{border:none;outline:none;background:transparent;font-size:.86rem;color:#17305c;width:100%;font-family:'Plus Jakarta Sans',sans-serif;}
+.pred-search input::placeholder{color:#a8b6d6;}
+.pred-filter-group{display:flex;gap:8px;flex-wrap:wrap;}
+.pred-filter-chip{padding:10px 18px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid rgba(96,165,250,.16);color:#35507b;font-size:.8rem;font-weight:700;cursor:pointer;transition:.25s ease;box-shadow:0 6px 16px rgba(37,99,235,.04);}
+.pred-filter-chip:hover{transform:translateY(-2px);}
+.pred-filter-chip.active{background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;border:none;box-shadow:0 12px 26px rgba(37,99,235,.22);}
+.pred-sort-select{padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid rgba(96,165,250,.16);color:#35507b;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 6px 16px rgba(37,99,235,.04);}
+
+.pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;}
+.pred-card{padding:22px;border-radius:22px;background:rgba(255,255,255,.55);backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.82);box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 8px 22px rgba(29,78,216,.07),0 18px 42px rgba(29,78,216,.06);transition:transform .26s cubic-bezier(.22,.68,0,1.2),box-shadow .26s ease;animation:fadeUp .5s ease both;}
+.pred-card:hover{transform:translateY(-5px);box-shadow:0 2px 0 rgba(255,255,255,.95) inset,0 16px 36px rgba(29,78,216,.13),0 30px 70px rgba(29,78,216,.09);}
+.pred-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.pred-card-disease{font-family:'Bricolage Grotesque',sans-serif;font-size:1.05rem;font-weight:800;color:#102348;}
+.pred-card-date{font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:3px;}
+.pred-card-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.pred-icon-normal{background:rgba(16,185,129,.10);color:#10b981;}
+.pred-icon-fibroid{background:rgba(245,158,11,.12);color:#f59e0b;}
+.pred-icon-adeno{background:rgba(249,115,22,.12);color:#f97316;}
+.pred-icon-cancer{background:rgba(239,68,68,.12);color:#ef4444;}
+
+.pred-card-risk-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.pred-card-risk-bar-wrap{flex:1;height:8px;border-radius:20px;background:#e8eef8;overflow:hidden;}
+.pred-card-risk-bar{height:100%;border-radius:20px;transition:width 1s cubic-bezier(.22,.68,0,1.2);}
+.pred-card-risk-val{font-size:.85rem;font-weight:800;color:#17305c;min-width:42px;text-align:right;}
+
+.pred-card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.pred-tag{font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(37,99,235,.07);color:#2563eb;border:1px solid rgba(37,99,235,.12);}
+.pred-tag.severity-low{background:rgba(5,150,105,.08);color:#059669;border-color:rgba(5,150,105,.15);}
+.pred-tag.severity-medium{background:rgba(217,119,6,.08);color:#d97706;border-color:rgba(217,119,6,.15);}
+.pred-tag.severity-high{background:rgba(220,38,38,.08);color:#dc2626;border-color:rgba(220,38,38,.15);}
+
+.pred-card-actions{display:flex;gap:8px;}
+.pred-card-actions .btn-sm{flex:1;justify-content:center;}
+
+.pred-empty{text-align:center;padding:60px 20px;color:#94a3b8;}
+.pred-empty i{font-size:2.6rem;color:#c7d7fc;margin-bottom:14px;display:block;}
+.pred-empty h3{font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;color:#17305c;margin-bottom:8px;}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fa-solid fa-wave-square"></i></div>
+    <div class="page-header-left">
+      <h1>Prediction Management</h1>
+      <p>Full AI analysis history for {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %} — search, filter and review every scan.</p>
+    </div>
+  </div>
+  <a href="{% url 'dashboard' %}" class="btn-premium">
+    <i class="fa-solid fa-microchip"></i> New Analysis
+  </a>
+</div>
+
+<!-- TOOLBAR -->
+<div class="pred-toolbar">
+  <div class="pred-search">
+    <svg width="15" height="15" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="predSearchInput" placeholder="Search by disease, date, or risk level…">
+  </div>
+  <div class="pred-filter-group" id="predFilterGroup">
+    <div class="pred-filter-chip active" data-filter="all">All</div>
+    <div class="pred-filter-chip" data-filter="Normal Uterus">Normal</div>
+    <div class="pred-filter-chip" data-filter="Fibroid">Fibroid</div>
+    <div class="pred-filter-chip" data-filter="Adenomyosis">Adenomyosis</div>
+    <div class="pred-filter-chip" data-filter="Endometrial Cancer">Cancer</div>
+  </div>
+  <select class="pred-sort-select" id="predSortSelect">
+    <option value="date_desc">Newest First</option>
+    <option value="date_asc">Oldest First</option>
+    <option value="risk_desc">Highest Risk First</option>
+    <option value="risk_asc">Lowest Risk First</option>
+  </select>
+</div>
+
+<!-- GRID -->
+<div class="pred-grid" id="predGrid">
+  {% for p in predictions %}
+  <div class="pred-card"
+       data-disease="{{ p.disease }}"
+       data-risk="{{ p.fusion_risk_score }}"
+       data-date="{{ p.analyzed_at|date:'Y-m-d H:i' }}"
+       style="animation-delay:{{ forloop.counter0|add:'0' }}0ms">
+    <div class="pred-card-top">
+      <div>
+        <div class="pred-card-disease">{{ p.disease }}</div>
+        <div class="pred-card-date">{{ p.analyzed_at|date:"M d, Y · h:i A" }}</div>
+      </div>
+      <div class="pred-card-icon {% if p.disease == 'Normal Uterus' %}pred-icon-normal{% elif p.disease == 'Fibroid' %}pred-icon-fibroid{% elif p.disease == 'Adenomyosis' %}pred-icon-adeno{% else %}pred-icon-cancer{% endif %}">
+        <i class="fa-solid fa-brain"></i>
+      </div>
+    </div>
+    <div class="pred-card-risk-row">
+      <div class="pred-card-risk-bar-wrap">
+        <div class="pred-card-risk-bar" style="width:{{ p.fusion_risk_score }}%; background:{% if p.fusion_risk_score >= 65 %}linear-gradient(90deg,#ef4444,#f87171){% elif p.fusion_risk_score >= 35 %}linear-gradient(90deg,#f59e0b,#fbbf24){% else %}linear-gradient(90deg,#10b981,#34d399){% endif %};"></div>
+      </div>
+      <div class="pred-card-risk-val">{{ p.fusion_risk_score }}%</div>
+    </div>
+    <div class="pred-card-tags">
+      <span class="pred-tag {% if p.fusion_risk_score >= 65 %}severity-high{% elif p.fusion_risk_score >= 35 %}severity-medium{% else %}severity-low{% endif %}">
+        {% if p.fusion_risk_score >= 65 %}High Severity{% elif p.fusion_risk_score >= 35 %}Medium Severity{% else %}Low Severity{% endif %}
+      </span>
+      <span class="pred-tag">Affected: {{ p.affected_area|default:"--" }}</span>
+      <span class="pred-tag">Fusion AI</span>
+    </div>
+    <div class="pred-card-actions">
+      <button class="btn-sm primary" onclick="window.location.href='{% url 'reports' %}?prediction_id={{ p.id }}'">
+        <i class="fa-solid fa-file-medical"></i> View Report
+      </button>
+      <button class="btn-sm" onclick="window.print()">
+        <i class="fa-solid fa-download"></i>
+      </button>
+    </div>
+  </div>
+  {% empty %}
+  <div class="pred-empty" style="grid-column:1/-1;">
+    <i class="fa-solid fa-folder-open"></i>
+    <h3>No predictions yet</h3>
+    <p>Run your first AI analysis from the dashboard to see results here.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ── Filter chips ──────────────────────────────
+const filterChips = document.querySelectorAll('.pred-filter-chip');
+let activeFilter = 'all';
+filterChips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    filterChips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.filter;
+    applyFilters();
+  });
+});
+
+// ── Search ────────────────────────────────────
+document.getElementById('predSearchInput').addEventListener('input', applyFilters);
+
+// ── Sort ──────────────────────────────────────
+document.getElementById('predSortSelect').addEventListener('change', applyFilters);
+
+function applyFilters() {
+  const query = document.getElementById('predSearchInput').value.toLowerCase();
+  const sortBy = document.getElementById('predSortSelect').value;
+  const grid = document.getElementById('predGrid');
+  const cards = Array.from(grid.querySelectorAll('.pred-card'));
+
+  cards.forEach(card => {
+    const disease = card.dataset.disease;
+    const matchesFilter = activeFilter === 'all' || disease === activeFilter;
+    const matchesSearch = card.textContent.toLowerCase().includes(query);
+    card.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+  });
+
+  const visibleCards = cards.filter(c => c.style.display !== 'none');
+  visibleCards.sort((a, b) => {
+    if (sortBy === 'date_desc') return new Date(b.dataset.date) - new Date(a.dataset.date);
+    if (sortBy === 'date_asc')  return new Date(a.dataset.date) - new Date(b.dataset.date);
+    if (sortBy === 'risk_desc') return parseFloat(b.dataset.risk) - parseFloat(a.dataset.risk);
+    if (sortBy === 'risk_asc')  return parseFloat(a.dataset.risk) - parseFloat(b.dataset.risk);
+    return 0;
+  });
+  visibleCards.forEach(card => grid.appendChild(card));
+}
+</script>
+{% endblock %}
